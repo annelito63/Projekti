@@ -23,5 +23,13 @@ Käyttötapaus:
 -asiakas valitsee sopivan lipputyypin ja lippujen määrän
 - ostettuaan voi tulostaa lipun
 
-Käyttöliittymä
+Käyttöliittymä:
+    Myynti:
+    -Kenttä, johon syötetään tapahtuman nimi
+    -Valintasarake, josta valitaan tapahtuman tyyppi
+    -Valintasarakkeet, joista valitaan eri lipputyypit
+    -Kenttä/kentät, joihin syötetään kunkin lipputyypin hinta
+    -Kenttä, johon syötetään myytävien lippujen maksimimäärä
+
+    Osto:
 
