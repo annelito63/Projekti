@@ -79,3 +79,20 @@ Käyttöliittymä:
     Osto:
     -Toteutetaan jatkokehityksessä myöhemmässä sprintissä. Alustavasti asiakas valitsee tapahtuman, lipputyypin ja lippujen määrän, minkä jälkeen voi tulostaa ostetun lipun.
 
+
+**Tietokannan relaatiot ja toiminta avattuna: 07.09.20267**
+
+    Järjestelmän tärkeimmät kokonaisuudet ovat käyttäjät, tapahtumat, lipputyypit, liput sekä myyntitapahtumat ja niiden rivit.
+    
+    "Käyttäjä" -entiteetti kuvaa järjestelmän eri käyttäjärooleja, kuten ylläpitäjää, myyjää ja ovella tarkastavaa henkilöä. Käyttäjä voi hallinnoida tapahtumia, tehdä myyntitapahtumia ja suorittaa lippujen tarkastuksia roolinsa mukaisesti.
+    
+    "Tapahtuma" sisältää tapahtuman perustiedot, kuten nimen, ajankohdan, kaupungin, paikan, kuvauksen ja lippujen enimmäismäärän. Tapahtumalle voidaan määritellä useita "lipputyyppejä", joilla on oma nimi, kuvaus ja hinta.
+    
+    "Lippu" liittyy tiettyyn tapahtumaan ja lipputyyppiin. Jokaiselle lipulle muodostetaan yksilöllinen koodi, jonka avulla lippu voidaan tunnistaa ja tarkastaa. Lipun tila kertoo, onko lippu esimerkiksi käyttämätön tai käytetty.
+    
+    "Myyntitapahtuma" kuvaa yhden myyntikerran ja sisältää esimerkiksi myyntiajan sekä kokonais­summan. Myyntitapahtumaan liittyvät **myyntirivit**, joissa määritellään myyty lipputyyppi, määrä, yksikköhinta ja rivin summa. Näiden tietojen avulla voidaan muodostaa tapahtumakohtaisia myyntiraportteja.
+    
+    "Tarkastus" -entiteetti tallentaa lipun tarkastamiseen liittyvät tiedot, kuten tarkastusajan ja tarkastuksen suorittaneen käyttäjän. Näin järjestelmä voi estää saman lipun käyttämisen useaan kertaan.
+    
+    Verkkokaupan osto-toiminnallisuus toteutetaan myöhemmässä kehitysvaiheessa, joten sitä ei ole huomioitu tässä relaatiomallissa.
+
