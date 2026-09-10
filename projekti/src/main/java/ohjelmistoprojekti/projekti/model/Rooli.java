@@ -1,3 +1,5 @@
+package ohjelmistoprojekti.projekti.model;
+
 public enum Rooli {
     YLLAPITAJA,
     MYYJA,

@@ -1,10 +1,17 @@
+package ohjelmistoprojekti.projekti.model;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class Lippu {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -13,13 +20,27 @@ public class Lippu {
     @ManyToOne
     @JoinColumn(name = "tapahtumaid")
     private Tapahtuma tapahtumaid;
+
     private String nimi;
     private String kuvaus;
     private double hinta;
 
-    @JsonIgnoreProperties("tyyppiid")
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "tyyppiid")
-    private List<Tyyppi> tyypit;
+    @JsonIgnoreProperties("liput")
+    @ManyToOne
+    @JoinColumn(name = "lipputyyppi_id")
+    private Lipputyyppi lipputyyppi;
+
+    public Lippu() {
+    }
+
+    public Lippu(Long id, Tapahtuma tapahtumaid, String nimi, String kuvaus, double hinta, Lipputyyppi lipputyyppi) {
+        this.id = id;
+        this.tapahtumaid = tapahtumaid;
+        this.nimi = nimi;
+        this.kuvaus = kuvaus;
+        this.hinta = hinta;
+        this.lipputyyppi = lipputyyppi;
+    }
 
     public Long getId() {
         return id;
@@ -61,34 +82,17 @@ public class Lippu {
         this.hinta = hinta;
     }
 
-
-    public Lippu() {
+    public Lipputyyppi getLipputyyppi() {
+        return lipputyyppi;
     }
 
-
-    public List<Tyyppi> getTyypit() {
-        return tyypit;
-    }
-
-    public void setTyypit(List<Tyyppi> tyypit) {
-        this.tyypit = tyypit;
-    }
-
-    public Lippu(Long id, Tapahtuma tapahtumaid, String nimi, String kuvaus, double hinta, List<Tyyppi> tyypit) {
-        this.id = id;
-        this.tapahtumaid = tapahtumaid;
-        this.nimi = nimi;
-        this.kuvaus = kuvaus;
-        this.hinta = hinta;
-        this.tyypit = tyypit;
+    public void setLipputyyppi(Lipputyyppi lipputyyppi) {
+        this.lipputyyppi = lipputyyppi;
     }
 
     @Override
     public String toString() {
-        return "Lippu [id=" + id + ", tapahtumaid=" + tapahtumaid + ", nimi=" + nimi + ", kuvaus=" + kuvaus + ", hinta="
-                + hinta + ", tyypit=" + tyypit + "]";
+        return "Lippu [id=" + id + ", tapahtumaid=" + tapahtumaid + ", nimi=" + nimi + ", kuvaus=" + kuvaus
+                + ", hinta=" + hinta + ", lipputyyppi=" + lipputyyppi + "]";
     }
-
-    
-
 }

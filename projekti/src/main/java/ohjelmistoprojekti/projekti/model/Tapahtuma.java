@@ -1,9 +1,19 @@
+package ohjelmistoprojekti.projekti.model;
+
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 
+@Entity
 public class Tapahtuma {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long tapahtumaid;
@@ -19,8 +29,7 @@ public class Tapahtuma {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "tapahtumaid")
     private List<Lippu> liput;
 
-    public Tapahtuma(List<Lippu> liput) {
-        this.liput = liput;
+    public Tapahtuma() {
     }
 
     public Tapahtuma(Long tapahtumaid, String nimi, String tyyppi, String aika, String kaupunki, String paikka,
@@ -114,6 +123,4 @@ public class Tapahtuma {
                 + ", kaupunki=" + kaupunki + ", paikka=" + paikka + ", kuvaus=" + kuvaus + ", maara=" + maara
                 + ", liput=" + liput + "]";
     }
-
-    
 }

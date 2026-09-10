@@ -1,3 +1,5 @@
+package ohjelmistoprojekti.projekti.model;
+
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
