@@ -80,7 +80,7 @@ Käyttöliittymä:
     -Toteutetaan jatkokehityksessä myöhemmässä sprintissä. Alustavasti asiakas valitsee tapahtuman, lipputyypin ja lippujen määrän, minkä jälkeen voi tulostaa ostetun lipun.
 
 
-**Tietokannan relaatiot ja toiminta avattuna: 07.09.20267**
+**Tietokannan relaatiot ja toiminta avattuna: 07.09.2026**
 
     Järjestelmän tärkeimmät kokonaisuudet ovat käyttäjät, tapahtumat, lipputyypit, liput sekä myyntitapahtumat ja niiden rivit.
     
@@ -96,3 +96,16 @@ Käyttöliittymä:
     
     Verkkokaupan osto-toiminnallisuus toteutetaan myöhemmässä kehitysvaiheessa, joten sitä ei ole huomioitu tässä relaatiomallissa.
 
+**Entity testi ProjektiApplicationTests.java tiedostoon: 10.09.2026**
+    Testi:
+
+        -Luo uuden Lippu-olion testiarvoilla.
+        -Tallentaa lipun LippuRepository-repositoryn avulla.
+        -Hakee lipun nimen perusteella findByNimi-metodilla.
+        -Varmistaa assert-tarkistuksilla, että:
+        -lipulla on muodostunut id
+        -id vastaa tallennettua lippua
+        -nimi, kuvaus ja hinta ovat oikein
+        -tapahtuma- ja lipputyyppitiedot ovat null
+    
+    Jos haku tai jokin attribuutti ei vastaa odotettua arvoa, testi epäonnistuu. Onnistunut testi kertoo, että lipun tallennus, haku ja attribuuttien lukeminen toimivat oikein.
