@@ -17,6 +17,10 @@ public class Lippu {
     private String kuvaus;
     private double hinta;
 
+    @JsonIgnoreProperties("tyyppiid")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "tyyppiid")
+    private List<Tyyppi> tyypit;
+
     public Long getId() {
         return id;
     }
@@ -57,21 +61,34 @@ public class Lippu {
         this.hinta = hinta;
     }
 
+
     public Lippu() {
     }
 
-    public Lippu(Long id, Tapahtuma tapahtumaid, String nimi, String kuvaus, double hinta) {
+
+    public List<Tyyppi> getTyypit() {
+        return tyypit;
+    }
+
+    public void setTyypit(List<Tyyppi> tyypit) {
+        this.tyypit = tyypit;
+    }
+
+    public Lippu(Long id, Tapahtuma tapahtumaid, String nimi, String kuvaus, double hinta, List<Tyyppi> tyypit) {
         this.id = id;
         this.tapahtumaid = tapahtumaid;
         this.nimi = nimi;
         this.kuvaus = kuvaus;
         this.hinta = hinta;
+        this.tyypit = tyypit;
     }
 
     @Override
     public String toString() {
         return "Lippu [id=" + id + ", tapahtumaid=" + tapahtumaid + ", nimi=" + nimi + ", kuvaus=" + kuvaus + ", hinta="
-                + hinta + "]";
+                + hinta + ", tyypit=" + tyypit + "]";
     }
+
+    
 
 }
