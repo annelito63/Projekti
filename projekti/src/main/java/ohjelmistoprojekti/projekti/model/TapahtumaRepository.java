@@ -9,4 +9,6 @@ public interface TapahtumaRepository extends CrudRepository<Tapahtuma, Long> {
 
     List<Tapahtuma> findByPaikka(String paikka);
 
+    List<Tapahtuma> findAll();
+
 }
