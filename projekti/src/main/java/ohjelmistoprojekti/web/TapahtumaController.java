@@ -1,5 +1,0 @@
-package ohjelmistoprojekti.web;
-
-public {
-    
-}
