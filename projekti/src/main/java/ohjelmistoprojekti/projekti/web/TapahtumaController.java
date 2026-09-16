@@ -10,9 +10,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import ohjelmistoprojekti.projekti.model.Tapahtuma;
 import ohjelmistoprojekti.projekti.model.TapahtumaRepository;
+
+import java.util.Optional;
 
 @RestController
 public class TapahtumaController {
@@ -33,6 +36,13 @@ public class TapahtumaController {
         uusiTapahtuma.setTapahtumaid(null); // kanta generoi id:n itse
         Tapahtuma tallennettu = tapahtumaRepository.save(uusiTapahtuma);
         return ResponseEntity.status(HttpStatus.CREATED).body(tallennettu);
+    }
+
+    @GetMapping("/tapahtumat/{id}")
+    public ResponseEntity<Tapahtuma> findTapahtuma(@PathVariable Long id) {
+        Optional<Tapahtuma> tapahtuma = tapahtumaRepository.findById(id);
+        return tapahtuma.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
 }
