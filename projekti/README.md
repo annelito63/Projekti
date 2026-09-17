@@ -96,16 +96,38 @@ Käyttöliittymä:
     
     Verkkokaupan osto-toiminnallisuus toteutetaan myöhemmässä kehitysvaiheessa, joten sitä ei ole huomioitu tässä relaatiomallissa.
 
-**Entity testi ProjektiApplicationTests.java tiedostoon: 10.09.2026**
-    Testi:
+**Tapahtuman muokkaus ja poisto**
 
-        -Luo uuden Lippu-olion testiarvoilla.
-        -Tallentaa lipun LippuRepository-repositoryn avulla.
-        -Hakee lipun nimen perusteella findByNimi-metodilla.
-        -Varmistaa assert-tarkistuksilla, että:
-        -lipulla on muodostunut id
-        -id vastaa tallennettua lippua
-        -nimi, kuvaus ja hinta ovat oikein
-        -tapahtuma- ja lipputyyppitiedot ovat null
-    
-    Jos haku tai jokin attribuutti ei vastaa odotettua arvoa, testi epäonnistuu. Onnistunut testi kertoo, että lipun tallennus, haku ja attribuuttien lukeminen toimivat oikein.
+    Tällä hetkellä järjestelmässä on toteutettu perus REST-rajapinta tapahtumien muokkaamiseen ja poistamiseen. Toiminnot toimivat Spring Bootin controller-luokan kautta, ja ne käyttävät TapahtumaRepositorya tietokannan lukemiseen ja kirjoittamiseen.
+
+    ### Tapahtuman muokkaaminen
+
+    Tapahtumaa voidaan päivittää HTTP PUT -pyynnöllä osoitteeseen `/tapahtumat/{id}`. Pyynnössä lähetetään päivitettävän tapahtuman uudet tiedot JSON-muodossa.
+
+    Päivitettävä tapahtuma voi sisältää seuraavat kentät:
+
+    - nimi
+    - tyyppi
+    - aika
+    - kaupunki
+    - paikka
+    - kuvaus
+    - maara
+
+    Jos tapahtumaa ei löydy annetulla id:llä, palvelin vastaa `404 Not Found`. Jos tapahtuma löytyy, järjestelmä päivittää olemassa olevan entiteetin kentät ja tallentaa muutokset takaisin tietokantaan. Onnistuneen päivityksen jälkeen palvelin palauttaa päivitetyn tapahtuman `200 OK` -vastauksena.
+
+    Tämä toteutus ei vielä sisällä laajempaa liiketoimintalogiikkaa, kuten roolien tarkistusta, pakollisten kenttien validointia tai estoa tapahtuman vähentämisestä alle jo myytyjen lippujen määrän.
+
+    ### Tapahtuman poistaminen
+
+    Tapahtuma voidaan poistaa HTTP DELETE -pyynnöllä osoitteeseen `/tapahtumat/{id}`. Jos tapahtuma löytyy, järjestelmä kutsuu `deleteById(id)` ja palauttaa `204 No Content` -vastauksen. Jos tapahtumaa ei löydy, palautetaan `404 Not Found`.
+
+    Tämä poisto on "puhdas tietokantapoisto" eli se poistaa tapahtuman tietokannasta ilman ylimääräistä vahvistuslogiikkaa tai turvallisuustarkistusta. Tämä tarkoittaa, että edistyneemmät käytännöt, kuten vahvistusviesti tai "passiivinen poisto" toteutetaan vielä erikseen, jos niitä tarvitaan.
+
+    ### Nykyinen tilanne ja rajoitukset
+
+    - Tapahtumien listaus, haku, lisäys, muokkaus ja poisto toimivat perusrajapintatasolla.
+    - Rajapinta on toteutettu Spring Bootin REST-controllerilla.
+    - Laajemmat käyttöoikeus- ja liiketoimintarajoitteet (esim. ylläpitäjärooli, myytyjen lippujen estäminen, vahvistusdialogit) eivät ole vielä tämän toteutuksen osana.
+
+
