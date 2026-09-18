@@ -2,17 +2,13 @@ package ohjelmistoprojekti.projekti.web;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import ohjelmistoprojekti.projekti.model.Tapahtuma;
 import ohjelmistoprojekti.projekti.model.TapahtumaRepository;
 
@@ -32,7 +28,7 @@ public class TapahtumaController {
         return tapahtumaRepository.findAll();
     }
 
-    @PostMapping("/tapahtumat")
+    @PostMapping("/addTapahtumat")
     public ResponseEntity<Tapahtuma> addTapahtuma(@RequestBody Tapahtuma uusiTapahtuma) {
         uusiTapahtuma.setTapahtumaid(null); // kanta generoi id:n itse
         Tapahtuma tallennettu = tapahtumaRepository.save(uusiTapahtuma);
@@ -46,7 +42,7 @@ public class TapahtumaController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/tapahtumat/{id}")
+    @PutMapping("/updateTapahtumat/{id}")
     public ResponseEntity<Tapahtuma> updateTapahtuma(@PathVariable Long id, @RequestBody Tapahtuma tapahtuma) {
         Optional<Tapahtuma> existingTapahtuma = tapahtumaRepository.findById(id);
 
@@ -67,7 +63,7 @@ public class TapahtumaController {
         return ResponseEntity.ok(updated);
     }
 
-    @DeleteMapping("/tapahtumat/{id}")
+    @DeleteMapping("/deleteTapahtumat/{id}")
     public ResponseEntity<Void> deleteTapahtuma(@PathVariable Long id) {
         Optional<Tapahtuma> existingTapahtuma = tapahtumaRepository.findById(id);
 
