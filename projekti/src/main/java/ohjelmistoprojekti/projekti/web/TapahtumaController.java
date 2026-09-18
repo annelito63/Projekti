@@ -28,7 +28,7 @@ public class TapahtumaController {
         return tapahtumaRepository.findAll();
     }
 
-    @PostMapping("/addTapahtumat")
+    @PostMapping("/tapahtumat")
     public ResponseEntity<Tapahtuma> addTapahtuma(@RequestBody Tapahtuma uusiTapahtuma) {
         uusiTapahtuma.setTapahtumaid(null); // kanta generoi id:n itse
         Tapahtuma tallennettu = tapahtumaRepository.save(uusiTapahtuma);
@@ -42,7 +42,7 @@ public class TapahtumaController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/updateTapahtumat/{id}")
+    @PutMapping("/tapahtumat/{id}")
     public ResponseEntity<Tapahtuma> updateTapahtuma(@PathVariable Long id, @RequestBody Tapahtuma tapahtuma) {
         Optional<Tapahtuma> existingTapahtuma = tapahtumaRepository.findById(id);
 
@@ -63,7 +63,7 @@ public class TapahtumaController {
         return ResponseEntity.ok(updated);
     }
 
-    @DeleteMapping("/deleteTapahtumat/{id}")
+    @DeleteMapping("/tapahtumat/{id}")
     public ResponseEntity<Void> deleteTapahtuma(@PathVariable Long id) {
         Optional<Tapahtuma> existingTapahtuma = tapahtumaRepository.findById(id);
 

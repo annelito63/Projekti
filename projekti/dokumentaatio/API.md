@@ -28,10 +28,10 @@ Tämä dokumentti kuvaa palvelun rajapinnan siltä osin kuin se tarvitaan
 - [Endpointit](#endpointit)
   - [GET /tapahtumat](#get-tapahtumat)
   - [GET /tapahtumat/{id}](#get-tapahtumatid)
-  - [POST /addTapahtumat](#post-tapahtumat)
-  - [PUT /updateTapahtumat/{id}](#put-tapahtumatid)
-  - [PATCH /patchTapahtumat/{id}](#patch-tapahtumatid)
-  - [DELETE /deleteTapahtumat/{id}](#delete-tapahtumatid)
+  - [POST /tapahtumat](#post-tapahtumat)
+  - [PUT /tapahtumat/{id}](#put-tapahtumatid)
+  - [PATCH /tapahtumat/{id}](#patch-tapahtumatid)
+  - [DELETE /tapahtumat/{id}](#delete-tapahtumatid)
 - [Paluukoodit](#paluukoodit)
 - [Tietokanta kehityksessä](#tietokanta-kehityksessä)
 - [Linkit](#linkit)
@@ -130,10 +130,10 @@ toteutetaan.
 |---|---|---|---|
 | GET | `/tapahtumat` | Hae kaikki tapahtumat | Toteutettu |
 | GET | `/tapahtumat/{id}` | Hae yksittäinen tapahtuma | Toteutettu |
-| POST | `/addTapahtumat` | Lisää uusi tapahtuma | Toteutettu |
-| PUT | `/updateTapahtumat/{id}` | Korvaa tapahtuman tiedot | Suunniteltu |
-| PATCH | `/patchTapahtumat/{id}` | Päivitä osa tapahtuman tiedoista | Suunniteltu |
-| DELETE | `/deleteTapahtumat/{id}` | Poista tapahtuma | Suunniteltu |
+| POST | `/tapahtumat` | Lisää uusi tapahtuma | Toteutettu |
+| PUT | `/tapahtumat/{id}` | Korvaa tapahtuman tiedot | Suunniteltu |
+| PATCH | `/tapahtumat/{id}` | Päivitä osa tapahtuman tiedoista | Suunniteltu |
+| DELETE | `/tapahtumat/{id}` | Poista tapahtuma | Suunniteltu |
  
 ---
  
@@ -257,7 +257,7 @@ curl http://localhost:8080/tapahtumat/1
  
 ---
  
-### POST /addTapahtumat
+### POST /tapahtumat
  
 Luo uuden tapahtuman. Palvelin generoi `tapahtumaid`-arvon; pyynnössä
 mahdollisesti annettu id ohitetaan.
@@ -265,7 +265,7 @@ mahdollisesti annettu id ohitetaan.
 **Metodi ja polku**
  
 ```
-POST /addTapahtumat
+POST /tapahtumat
 ```
  
 **Polkuparametrit**
@@ -323,7 +323,7 @@ tuottamat virheilmoitukset lisätään seuraavassa sprintissä.
 **Esimerkkikutsu**
  
 ```bash
-curl -X POST http://localhost:8080/addTapahtumat \
+curl -X POST http://localhost:8080/tapahtumat \
   -H "Content-Type: application/json" \
   -d '{
         "nimi": "Kesäkonsertti",
@@ -338,7 +338,7 @@ curl -X POST http://localhost:8080/addTapahtumat \
  
 ---
  
-### PUT /updateTapahtumat/{id}
+### PUT /tapahtumat/{id}
  
  
 Korvaa olemassa olevan tapahtuman tiedot kokonaan pyynnön sisällöllä.
@@ -347,7 +347,7 @@ Kentät, joita ei anneta, tyhjennetään.
 **Metodi ja polku**
  
 ```
-PUT /updateTapahtumat/{id}
+PUT /tapahtumat/{id}
 ```
  
 **Polkuparametrit**
@@ -385,14 +385,14 @@ Ei query-parametreja.
 **Esimerkkikutsu**
  
 ```bash
-curl -X PUT http://localhost:8080/updateTapahtumat/1 \
+curl -X PUT http://localhost:8080/tapahtumat/1 \
   -H "Content-Type: application/json" \
   -d '{ "nimi": "Kesäkonsertti 2026", "tyyppi": "Konsertti", "aika": "2026-06-12T19:30:00", "kaupunki": "Helsinki", "paikka": "Kaisaniemen puisto", "kuvaus": "Päivitetty ohjelmisto", "maara": 600 }'
 ```
  
 ---
  
-### PATCH /patchTapahtumat/{id}
+### PATCH /tapahtumat/{id}
  
 *Suunniteltu – ei vielä toteutettu.*
  
@@ -401,7 +401,7 @@ Päivittää vain pyynnössä annetut kentät. Muut kentät säilyvät ennallaan
 **Metodi ja polku**
  
 ```
-PATCH /patchTapahtumat/{id}
+PATCH /tapahtumat/{id}
 ```
  
 **Polkuparametrit**
@@ -433,14 +433,14 @@ Ei query-parametreja.
 **Esimerkkikutsu**
  
 ```bash
-curl -X PATCH http://localhost:8080/patchTapahtumat/1 \
+curl -X PATCH http://localhost:8080/tapahtumat/1 \
   -H "Content-Type: application/json" \
   -d '{ "maara": 750 }'
 ```
  
 ---
  
-### DELETE /deleteTapahtumat/{id}
+### DELETE /tapahtumat/{id}
  
  
 Poistaa tapahtuman tunnisteen perusteella.
@@ -448,7 +448,7 @@ Poistaa tapahtuman tunnisteen perusteella.
 **Metodi ja polku**
  
 ```
-DELETE /deleteTapahtumat/{id}
+DELETE /tapahtumat/{id}
 ```
  
 **Polkuparametrit**
@@ -481,7 +481,7 @@ Ei sisältöä.
 **Esimerkkikutsu**
  
 ```bash
-curl -X DELETE http://localhost:8080/deleteTapahtumat/1
+curl -X DELETE http://localhost:8080/tapahtumat/1
 ```
  
 ---
@@ -506,7 +506,7 @@ curl -X DELETE http://localhost:8080/deleteTapahtumat/1
   "status": 404,
   "error": "Not Found",
   "message": "Tapahtumaa id:llä 42 ei löytynyt",
-  "path": "/deleteTapahtumat/42"
+  "path": "/tapahtumat/42"
 }
 ```
  
