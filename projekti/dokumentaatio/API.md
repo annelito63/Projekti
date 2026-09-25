@@ -14,8 +14,8 @@ Tämä dokumentti kuvaa palvelun rajapinnan siltä osin kuin se tarvitaan
 | Kaikkien tapahtumien haku | Toteutettu |
 | Yksittäisen tapahtuman haku | Toteutettu |
 | Tapahtuman lisäys | Toteutettu |
-| Tapahtuman muokkaus (PUT / PATCH) | Suunniteltu |
-| Tapahtuman poisto (DELETE) | Suunniteltu |
+| Tapahtuman muokkaus (PUT / PATCH) | Toteutettu/Suunniteltu |
+| Tapahtuman poisto (DELETE) | Toteutettu |
 | Suodatus query-parametreilla | Suunniteltu |
  
 ---
