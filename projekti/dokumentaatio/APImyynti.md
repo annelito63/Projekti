@@ -27,12 +27,12 @@ Tämä dokumentti kuvaa palvelun rajapinnan siltä osin kuin se tarvitaan
 - [Yleiset periaatteet](#yleiset-periaatteet)
 - [Tietomalli: Tapahtuma](#tietomalli-tapahtuma)
 - [Endpointit](#endpointit)
-  - [GET /myyntitapahtumat](#get-myyntitapahtumat)
-  - [GET /myyntitapahtumat/{id}](#get-myyntitapahtumatid)
-  - [POST /myyntitapahtumat](#post-myyntitapahtumat)
-  - [PUT /myyntitapahtumat/{id}](#put-myyntitapahtumatid)
-  - [PATCH /myyntitapahtumat/{id}](#patch-myyntitapahtumatid)
-  - [DELETE /myyntitapahtumat/{id}](#delete-myyntitapahtumatid)
+  - [GET /myynnit](#get-myynnit)
+  - [GET /myynnit/{id}](#get-myynnitid)
+  - [POST /myynnit](#post-myynnit)
+  - [PUT /myynnit/{id}](#put-myynnitid)
+  - [PATCH /myynnit/{id}](#patch-myynnitid)
+  - [DELETE /myynnit/{id}](#delete-myynnitid)
 - [Paluukoodit](#paluukoodit)
 - [Tietokanta kehityksessä](#tietokanta-kehityksessä)
 - [Linkit](#linkit)
@@ -46,7 +46,7 @@ Tämä dokumentti kuvaa palvelun rajapinnan siltä osin kuin se tarvitaan
 | Tuotanto | *(ei vielä määritelty)* |
  
 Kaikki alla olevat polut ovat suhteessa base-URLiin, esim.
-`http://localhost:8080/myyntitapahtumat`.
+`http://localhost:8080/myynnit`.
  
 > **Huom.** `TapahtumaController`-luokassa ei ole luokkatason
 > `@RequestMapping`-annotaatiota, joten polut ovat sellaisenaan juuressa. Jos
@@ -63,7 +63,7 @@ Kaikki alla olevat polut ovat suhteessa base-URLiin, esim.
 | Merkistö | UTF-8 |
 | Pyynnön `Content-Type` | `application/json` (POST, PUT, PATCH) |
 | Vastauksen `Content-Type` | `application/json` |
-| Id:n generointi | Tietokanta generoi `myyntitapahtumaid`-arvon (`GenerationType.AUTO`) |
+| Id:n generointi | Tietokanta generoi `myyntiId`-arvon (`GenerationType.AUTO`) |
 | Autentikointi | Ei käytössä tässä vaiheessa |
  
 ---
@@ -86,7 +86,7 @@ Vastaa luokkaa `ohjelmistoprojekti.projekti.model.Myyntitapahtuma`.
  
 ```json
 {
-  "myyntiid": 1,
+  "myyntiId": 1,
   "tapahtuma": 1,
   "kayttaja": 1,
   "myyntiaika": "2026-06-12T19:00:00",
@@ -107,22 +107,22 @@ Käsittelyä varten luotu MyyntitapahtumaLuontiDTO.java ja MyyntiriviLuontiDTO.j
  
 | Metodi | Polku | Kuvaus | Tila |
 |---|---|---|---|
-| GET | `/myyntitapahtumat` | Hae kaikki myyntitapahtumat | Suunniteltu |
-| GET | `/myyntitapahtumat/{id}` | Hae yksittäinen myyntitapahtuma | Suunniteltu |
-| POST | `/myyntitapahtumat` | Lisää uusi myyntitapahtuma | Suunniteltu |
-| PUT | `/myyntitapahtumat/{id}` | Korvaa myyntitapahtuman tiedot | Suunniteltu |
-| PATCH | `/myyntitapahtumat/{id}` | Päivitä osa myyntitapahtuman tiedoista | Suunniteltu |
-| DELETE | `/myyntitapahtumat/{id}` | Poista myyntitapahtuma | Suunniteltu |
+| GET | `/myynnit` | Hae kaikki myyntitapahtumat | Suunniteltu |
+| GET | `/myynnit/{id}` | Hae yksittäinen myyntitapahtuma | Suunniteltu |
+| POST | `/myynnit` | Lisää uusi myyntitapahtuma | Suunniteltu |
+| PUT | `/myynnit/{id}` | Korvaa myyntitapahtuman tiedot | Suunniteltu |
+| PATCH | `/myynnit/{id}` | Päivitä osa myyntitapahtuman tiedoista | Suunniteltu |
+| DELETE | `/myynnit/{id}` | Poista myyntitapahtuma | Suunniteltu |
  
 ---
-### GET /myyntitapahtumat
+### GET /myynnit
  
 Palauttaa listan kaikista myyntitapahtumista.
  
 **Metodi ja polku**
  
 ```
-GET /myyntitapahtumat
+GET /myynnit
 ```
  
 **Polkuparametrit**
@@ -172,19 +172,19 @@ Jos myyntitapahtumia ei ole, vastaus on `200 OK` ja tyhjä lista `[]`.
 **Esimerkkikutsu**
  
 ```bash
-curl http://localhost:8080/myyntitapahtumat
+curl http://localhost:8080/myynnit
 ```
  
 ---
  
-### GET /myyntitapahtumat/{id}
+### GET /myynnit/{id}
  
 Palauttaa yhden myyntitapahtuman tunnisteen perusteella.
  
 **Metodi ja polku**
  
 ```
-GET /myyntitapahtumat/{id}
+GET /myynnit/{id}
 ```
  
 **Polkuparametrit**
@@ -221,14 +221,14 @@ Tapahtumaa annetulla id:llä ei löytynyt. Vastauksella ei ole sisältöä.
 **Esimerkkikutsu**
  
 ```bash
-curl http://localhost:8080/myyntitapahtumat/1
+curl http://localhost:8080/myynnit/1
 ```
  
 ---
  
-### POST /myyntitapahtumat
+### POST /myynnit
  
-Luo uuden tapahtuman. Palvelin generoi `myyntitapahtumaid`-arvon; pyynnössä
+Luo uuden tapahtuman. Palvelin generoi `myyntiId`-arvon; pyynnössä
 mahdollisesti annettu id ohitetaan.
  
 **Metodi ja polku**
@@ -288,7 +288,7 @@ tuottamat virheilmoitukset lisätään seuraavassa sprintissä.
 **Esimerkkikutsu**
  
 ```bash
-curl -X POST http://localhost:8080/myyntitapahtumat \
+curl -X POST http://localhost:8080/myynnit \
   -H "Content-Type: application/json" \
   -d '{
         "myyntiid": 1,
@@ -302,7 +302,7 @@ curl -X POST http://localhost:8080/myyntitapahtumat \
  
 ---
  
-### PUT /myyntitapahtumat/{id}
+### PUT /myynnit/{id}
  
  
 Korvaa olemassa olevan myyntitapahtuman tiedot kokonaan pyynnön sisällöllä.
@@ -311,7 +311,7 @@ Kentät, joita ei anneta, tyhjennetään.
 **Metodi ja polku**
  
 ```
-PUT /myyntitapahtumat/{id}
+PUT /myynnit/{id}
 ```
  
 **Polkuparametrit**
@@ -348,7 +348,7 @@ Ei query-parametreja.
 **Esimerkkikutsu**
  
 ```bash
-curl -X PUT http://localhost:8080/myyntitapahtumat/1 \
+curl -X PUT http://localhost:8080/myynnit/1 \
   -H "Content-Type: application/json" \
   -d '{ "myyntiid": 1, "tapahtuma": 3, "kayttaja": 5, "myyntiaika": "2026-08-12T19:00:00", "kokonaissumma": 74.95 }'
 ```
@@ -364,7 +364,7 @@ Päivittää vain pyynnössä annetut kentät. Muut kentät säilyvät ennallaan
 **Metodi ja polku**
  
 ```
-PATCH /myyntitapahtumat/{id}
+PATCH /myynnit/{id}
 ```
  
 **Polkuparametrit**
@@ -396,14 +396,14 @@ Ei query-parametreja.
 **Esimerkkikutsu**
  
 ```bash
-curl -X PATCH http://localhost:8080/myyntitapahtumat/1 \
+curl -X PATCH http://localhost:8080/myynnit/1 \
   -H "Content-Type: application/json" \
   -d '{ "kokonaissumma": 59.95 }'
 ```
  
 ---
  
-### DELETE /myyntitapahtumat/{id}
+### DELETE /myynnit/{id}
  
  
 Poistaa tapahtuman tunnisteen perusteella.
@@ -411,7 +411,7 @@ Poistaa tapahtuman tunnisteen perusteella.
 **Metodi ja polku**
  
 ```
-DELETE /myyntitapahtumat/{id}
+DELETE /myynnit/{id}
 ```
  
 **Polkuparametrit**
@@ -440,7 +440,7 @@ Ei sisältöä.
 **Esimerkkikutsu**
  
 ```bash
-curl -X DELETE http://localhost:8080/myyntitapahtumat/1
+curl -X DELETE http://localhost:8080/myynnit/1
 ```
  
 ---
@@ -465,7 +465,7 @@ curl -X DELETE http://localhost:8080/myyntitapahtumat/1
   "status": 404,
   "error": "Not Found",
   "message": "Myyntitapahtumaa id:llä 42 ei löytynyt",
-  "path": "/myyntitapahtumat/42"
+  "path": "/myynnit/42"
 }
 ```
  
