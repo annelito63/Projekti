@@ -24,6 +24,7 @@ import ohjelmistoprojekti.projekti.model.Tapahtuma;
 import ohjelmistoprojekti.projekti.model.TapahtumaRepository;
 import ohjelmistoprojekti.projekti.web.dto.MyyntiriviLuontiDto;
 import ohjelmistoprojekti.projekti.web.dto.MyyntitapahtumaLuontiDto;
+import jakarta.validation.Valid;
 
 @RestController
 public class MyyntitapahtumaController {
@@ -45,7 +46,7 @@ public class MyyntitapahtumaController {
 
     @GetMapping("/myynnit")
     public Iterable<Myyntitapahtuma> findAllMyynnit() {
-        return myyntitapahtumaRepository.findAll();
+            return myyntitapahtumaRepository.findAll();
     }
 
     @GetMapping("/myynnit/{id}")
@@ -56,7 +57,7 @@ public class MyyntitapahtumaController {
     }
 
     @PostMapping("/myynnit")
-    public ResponseEntity<?> addMyynti(@RequestBody MyyntitapahtumaLuontiDto pyynto) {
+    public ResponseEntity<?> addMyynti(@Valid @RequestBody MyyntitapahtumaLuontiDto pyynto) {
 
         if (pyynto.getTapahtumaId() == null) {
             return ResponseEntity.badRequest().body("tapahtumaId on pakollinen");

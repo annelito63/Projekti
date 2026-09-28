@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.validation.Valid;
 import ohjelmistoprojekti.projekti.model.Tapahtuma;
 import ohjelmistoprojekti.projekti.model.TapahtumaRepository;
 
@@ -29,12 +31,12 @@ public class TapahtumaController {
     }
 
     @PostMapping("/tapahtumat")
-    public ResponseEntity<Tapahtuma> addTapahtuma(@RequestBody Tapahtuma uusiTapahtuma) {
+    public ResponseEntity<Tapahtuma> addTapahtuma(@Valid @RequestBody Tapahtuma uusiTapahtuma) {
         uusiTapahtuma.setTapahtumaid(null); // kanta generoi id:n itse
         Tapahtuma tallennettu = tapahtumaRepository.save(uusiTapahtuma);
         return ResponseEntity.status(HttpStatus.CREATED).body(tallennettu);
     }
-
+    
     @GetMapping("/tapahtumat/{id}")
     public ResponseEntity<Tapahtuma> findTapahtuma(@PathVariable Long id) {
         Optional<Tapahtuma> tapahtuma = tapahtumaRepository.findById(id);
@@ -43,7 +45,7 @@ public class TapahtumaController {
     }
 
     @PutMapping("/tapahtumat/{id}")
-    public ResponseEntity<Tapahtuma> updateTapahtuma(@PathVariable Long id, @RequestBody Tapahtuma tapahtuma) {
+    public ResponseEntity<Tapahtuma> updateTapahtuma(@PathVariable Long id, @Valid @RequestBody Tapahtuma tapahtuma) {
         Optional<Tapahtuma> existingTapahtuma = tapahtumaRepository.findById(id);
 
         if (existingTapahtuma.isEmpty()) {

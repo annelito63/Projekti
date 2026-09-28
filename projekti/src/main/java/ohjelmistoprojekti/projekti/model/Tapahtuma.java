@@ -10,6 +10,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+
 
 @Entity
 public class Tapahtuma {
@@ -17,12 +20,18 @@ public class Tapahtuma {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long tapahtumaid;
+
+    @NotEmpty(message= "Tapahtumalla pitää olla nimi")
     private String nimi;
     private String tyyppi;
+
+    @NotEmpty(message= "Tapahtumalla pitää olla aika")
     private String aika;
     private String kaupunki;
     private String paikka;
     private String kuvaus;
+
+    @NotNull(message= "Lippujen määrä ei voi olla tyhjä")
     private int maara;
 
     @JsonIgnoreProperties("tapahtumaid")
