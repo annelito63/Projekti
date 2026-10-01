@@ -23,7 +23,7 @@ public class Tapahtuma {
     private String kaupunki;
     private String paikka;
     private String kuvaus;
-    private int maara;
+    private Integer maara; // oli: private int maara;
 
     @JsonIgnoreProperties("tapahtumaid")
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "tapahtumaid")
@@ -33,7 +33,7 @@ public class Tapahtuma {
     }
 
     public Tapahtuma(Long tapahtumaid, String nimi, String tyyppi, String aika, String kaupunki, String paikka,
-            String kuvaus, int maara, List<Lippu> liput) {
+            String kuvaus, Integer maara, List<Lippu> liput) { // oli: int maara
         this.tapahtumaid = tapahtumaid;
         this.nimi = nimi;
         this.tyyppi = tyyppi;
@@ -101,11 +101,11 @@ public class Tapahtuma {
         this.kuvaus = kuvaus;
     }
 
-    public int getMaara() {
+    public Integer getMaara() { // oli: public int getMaara()
         return maara;
     }
 
-    public void setMaara(int maara) {
+    public void setMaara(Integer maara) { // oli: public void setMaara(int maara)
         this.maara = maara;
     }
 
