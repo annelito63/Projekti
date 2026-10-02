@@ -2,6 +2,7 @@ package ohjelmistoprojekti.projekti.web;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -57,6 +58,20 @@ class MyyntitapahtumaControllerTest {
 		mockMvc.perform(get("/myynnit/{id}", Long.MAX_VALUE))
 			.andExpect(status().isNotFound());
     }
+
+	@Test
+	void myynninHakuVirheellisellaIdTyypillaPalauttaa400() throws Exception {
+		mockMvc.perform(get("/myynnit/abc"))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void myynninPaivitykseenKaytettyPutPalauttaa405() throws Exception {
+		mockMvc.perform(put("/myynnit/{id}", Long.MAX_VALUE)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{}"))
+				.andExpect(status().isMethodNotAllowed());
+	}
 
     @Test
     void myynninLuontiVirheellisellaJsonillaPalauttaa400() throws Exception {

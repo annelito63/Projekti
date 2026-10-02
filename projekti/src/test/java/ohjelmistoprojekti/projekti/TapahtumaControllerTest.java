@@ -40,11 +40,33 @@ class TapahtumaControllerTest {
     }
 
     @Test
+    void tapahtumanHakuVirheellisellaIdTyypillaPalauttaa400() throws Exception {
+        mockMvc.perform(get("/tapahtumat/abc"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void tapahtumanLuontiVirheellisellaJsonillaPalauttaa400() throws Exception {
         mockMvc.perform(post("/tapahtumat")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{"))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void tapahtumanLuontiVaarallaSisaltotyypillaPalauttaa415() throws Exception {
+        mockMvc.perform(post("/tapahtumat")
+                .contentType(MediaType.TEXT_PLAIN)
+                .content("{}"))
+                .andExpect(status().isUnsupportedMediaType());
+    }
+
+    @Test
+    void resurssipolunPostPalauttaa405() throws Exception {
+        mockMvc.perform(post("/tapahtumat/{id}", Long.MAX_VALUE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+                .andExpect(status().isMethodNotAllowed());
     }
 
     @Test
