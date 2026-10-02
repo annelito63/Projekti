@@ -31,15 +31,7 @@ public class TapahtumaController {
     }
 
     @PostMapping("/tapahtumat")
-
-
-
-    public ResponseEntity<Tapahtuma> addTapahtuma(@RequestBody Tapahtuma uusiTapahtuma) {
-        if (!hasRequiredFields(uusiTapahtuma)) {
-            return ResponseEntity.badRequest().build();
-        }
-
-
+    public ResponseEntity<Tapahtuma> addTapahtuma(@Valid @RequestBody Tapahtuma uusiTapahtuma) {
         uusiTapahtuma.setTapahtumaid(null); // kanta generoi id:n itse
         Tapahtuma tallennettu = tapahtumaRepository.save(uusiTapahtuma);
         return ResponseEntity.status(HttpStatus.CREATED).body(tallennettu);
@@ -58,9 +50,6 @@ public class TapahtumaController {
 
         if (existingTapahtuma.isEmpty()) {
             return ResponseEntity.notFound().build();
-        }
-        if (!hasRequiredFields(tapahtuma)) {
-            return ResponseEntity.badRequest().build();
         }
 
         Tapahtuma existing = existingTapahtuma.get();
@@ -86,14 +75,6 @@ public class TapahtumaController {
 
         tapahtumaRepository.deleteById(id);
         return ResponseEntity.noContent().build();
-    }
-
-    private boolean hasRequiredFields(Tapahtuma tapahtuma) {
-        return tapahtuma.getNimi() != null && !tapahtuma.getNimi().isBlank()
-                && tapahtuma.getTyyppi() != null && !tapahtuma.getTyyppi().isBlank()
-                && tapahtuma.getAika() != null && !tapahtuma.getAika().isBlank()
-                && tapahtuma.getKaupunki() != null && !tapahtuma.getKaupunki().isBlank()
-                && tapahtuma.getPaikka() != null && !tapahtuma.getPaikka().isBlank();
     }
 
 }

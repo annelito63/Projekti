@@ -10,7 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 
@@ -21,18 +21,24 @@ public class Tapahtuma {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long tapahtumaid;
 
-    @NotEmpty(message= "Tapahtumalla pitää olla nimi")
+    @NotBlank(message = "Tapahtumalla pitää olla nimi")
     private String nimi;
+
+    @NotBlank(message = "Tapahtuman tyyppi on pakollinen")
     private String tyyppi;
 
-    @NotEmpty(message= "Tapahtumalla pitää olla aika")
+    @NotBlank(message = "Tapahtumalla pitää olla aika")
     private String aika;
+
+    @NotBlank(message = "Tapahtuman kaupunki on pakollinen")
     private String kaupunki;
+
+    @NotBlank(message = "Tapahtumapaikka on pakollinen")
     private String paikka;
     private String kuvaus;
 
 
-    @NotNull(message= "Lippujen määrä ei voi olla tyhjä")
+    @NotNull(message = "Lippujen määrä ei voi olla tyhjä")
     private Integer maara; // oli: private int maara;
 
 
