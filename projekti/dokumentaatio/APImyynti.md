@@ -12,11 +12,11 @@ Tämä dokumentti kuvaa palvelun rajapinnan siltä osin kuin se tarvitaan
  
 | Toiminto | Tila |
 |---|---|
-| Kaikkien tapahtumien haku | Suunniteltu |
-| Yksittäisen tapahtuman haku | Suunniteltu |
-| Tapahtuman lisäys | Suunniteltu |
-| Tapahtuman muokkaus (PUT / PATCH) | Suunniteltu |
-| Tapahtuman poisto (DELETE) | Suunniteltu |
+| Kaikkien myyntitapahtumien haku | Toteutettu |
+| Yksittäisen myyntitapahtuman haku | Toteutettu |
+| Myyntitapahtuman lisäys | Toteutettu |
+| Myyntitapahtuman muokkaus (PUT / PATCH) | Suunniteltu |
+| Myyntitapahtuman poisto (DELETE) | Suunniteltu |
 | Suodatus query-parametreilla | Suunniteltu |
  
  ---
@@ -61,7 +61,7 @@ Kaikki alla olevat polut ovat suhteessa base-URLiin, esim.
 |---|---|
 | Tietomuoto | JSON (`application/json`) |
 | Merkistö | UTF-8 |
-| Pyynnön `Content-Type` | `application/json` (POST, PUT, PATCH) |
+| Pyynnön `Content-Type` | `application/json` (POST) |
 | Vastauksen `Content-Type` | `application/json` |
 | Id:n generointi | Tietokanta generoi `myyntiId`-arvon (`GenerationType.AUTO`) |
 | Autentikointi | Ei käytössä tässä vaiheessa |
@@ -107,9 +107,9 @@ Käsittelyä varten luotu MyyntitapahtumaLuontiDTO.java ja MyyntiriviLuontiDTO.j
  
 | Metodi | Polku | Kuvaus | Tila |
 |---|---|---|---|
-| GET | `/myynnit` | Hae kaikki myyntitapahtumat | Suunniteltu |
-| GET | `/myynnit/{id}` | Hae yksittäinen myyntitapahtuma | Suunniteltu |
-| POST | `/myynnit` | Lisää uusi myyntitapahtuma | Suunniteltu |
+| GET | `/myynnit` | Hae kaikki myyntitapahtumat | Toteutettu |
+| GET | `/myynnit/{id}` | Hae yksittäinen myyntitapahtuma | Toteutettu |
+| POST | `/myynnit` | Lisää uusi myyntitapahtuma | Toteutettu |
 | PUT | `/myynnit/{id}` | Korvaa myyntitapahtuman tiedot | Suunniteltu |
 | PATCH | `/myynnit/{id}` | Päivitä osa myyntitapahtuman tiedoista | Suunniteltu |
 | DELETE | `/myynnit/{id}` | Poista myyntitapahtuma | Suunniteltu |
@@ -234,7 +234,7 @@ mahdollisesti annettu id ohitetaan.
 **Metodi ja polku**
  
 ```
-POST /tapahtumat
+POST /myynnit
 ```
  
 **Polkuparametrit**
@@ -255,12 +255,14 @@ Content-Type: application/json
  
 ```json
 {
-  "myyntiid": 1,
-  "tapahtuma": 1,
-  "kayttaja": 1,
-  "myyntiaika": "2026-06-12T19:00:00",
-  "kokonaissumma": 50.95,
-  "myyntirivit": []
+  "tapahtumaId": 1,
+  "kayttajaId": 1,
+  "rivit": [
+    {
+      "lipputyyppiId": 1,
+      "maara": 1
+    }
+  ]
 }
 ```
  
@@ -281,9 +283,12 @@ Palauttaa luodun tapahtuman generoidulla tunnisteella.
  
 **Vastaus: 400 Bad Request**
  
-JSON on syntaktisesti virheellinen tai kentän tyyppi on väärä (esim. `maara`
-merkkijonona). Kenttäkohtainen validointi (`@NotBlank`, `@Min`) ja sen
-tuottamat virheilmoitukset lisätään seuraavassa sprintissä.
+JSON on syntaktisesti virheellinen, pakollisia tunnisteita tai myyntirivejä
+puuttuu tai rivin määrä ei ole positiivinen.
+
+**Vastaus: 404 Not Found**
+
+Pyynnössä viitattua tapahtumaa, käyttäjää tai lipputyyppiä ei löydy.
  
 **Esimerkkikutsu**
  
@@ -291,12 +296,9 @@ tuottamat virheilmoitukset lisätään seuraavassa sprintissä.
 curl -X POST http://localhost:8080/myynnit \
   -H "Content-Type: application/json" \
   -d '{
-        "myyntiid": 1,
-        "tapahtuma": 1,
-        "kayttaja": 1,
-        "myyntiaika": "2026-06-12T19:00:00",
-        "kokonaissumma": 50.95,
-        "myyntirivit": []
+        "tapahtumaId": 1,
+        "kayttajaId": 1,
+        "rivit": [{ "lipputyyppiId": 1, "maara": 1 }]
       }'
 ```
  
@@ -355,7 +357,7 @@ curl -X PUT http://localhost:8080/myynnit/1 \
  
 ---
  
-### PATCH /tapahtumat/{id}
+### PATCH /myynnit/{id}
  
 *Suunniteltu – ei vielä toteutettu.*
  
@@ -405,6 +407,8 @@ curl -X PATCH http://localhost:8080/myynnit/1 \
  
 ### DELETE /myynnit/{id}
  
+*Suunniteltu – ei vielä toteutettu.*
+
  
 Poistaa tapahtuman tunnisteen perusteella.
  

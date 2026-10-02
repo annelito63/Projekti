@@ -14,7 +14,8 @@ Tämä dokumentti kuvaa palvelun rajapinnan siltä osin kuin se tarvitaan
 | Kaikkien tapahtumien haku | Toteutettu |
 | Yksittäisen tapahtuman haku | Toteutettu |
 | Tapahtuman lisäys | Toteutettu |
-| Tapahtuman muokkaus (PUT / PATCH) | Toteutettu/Suunniteltu |
+| Tapahtuman korvaava muokkaus (PUT) | Toteutettu |
+| Tapahtuman osittainen muokkaus (PATCH) | Suunniteltu |
 | Tapahtuman poisto (DELETE) | Toteutettu |
 | Suodatus query-parametreilla | Suunniteltu |
  
@@ -60,7 +61,7 @@ Kaikki alla olevat polut ovat suhteessa base-URLiin, esim.
 |---|---|
 | Tietomuoto | JSON (`application/json`) |
 | Merkistö | UTF-8 |
-| Pyynnön `Content-Type` | `application/json` (POST, PUT, PATCH) |
+| Pyynnön `Content-Type` | `application/json` (POST, PUT) |
 | Vastauksen `Content-Type` | `application/json` |
 | Id:n generointi | Tietokanta generoi `tapahtumaid`-arvon (`GenerationType.AUTO`) |
 | Autentikointi | Ei käytössä tässä vaiheessa |
@@ -71,7 +72,7 @@ Kaikki alla olevat polut ovat suhteessa base-URLiin, esim.
  
 Vastaa luokkaa `ohjelmistoprojekti.projekti.model.Tapahtuma`.
  
-| Kenttä | Tyyppi | Pakollinen (POST) | Kuvaus |
+| Kenttä | Tyyppi | Pakollinen (POST, PUT) | Kuvaus |
 |---|---|---|---|
 | `tapahtumaid` | Long | ei | Tapahtuman yksilöivä tunniste. Palvelin generoi. **Pyynnössä annettu arvo ohitetaan** (kontrolleri nollaa sen ennen tallennusta). |
 | `nimi` | String | kyllä | Tapahtuman nimi, esim. "Kesäkonsertti" |
@@ -80,7 +81,7 @@ Vastaa luokkaa `ohjelmistoprojekti.projekti.model.Tapahtuma`.
 | `kaupunki` | String | kyllä | Kaupunki, jossa tapahtuma järjestetään |
 | `paikka` | String | kyllä | Tapahtumapaikka kaupungin sisällä |
 | `kuvaus` | String | ei | Vapaamuotoinen kuvaus |
-| `maara` | int | kyllä | Tapahtuman lippujen kokonaismäärä. Jos kenttää ei anneta, arvoksi tulee `0`. |
+| `maara` | Integer | kyllä | Tapahtuman lippujen kokonaismäärä. |
 | `liput` | Lippu[] | ei | Tapahtumaan liittyvät liput (yksi-moneen-suhde). Palautetaan vastauksissa. |
  
 > **Huom. `aika`-kentästä.** Kenttä on tällä hetkellä tyyppiä `String`, joten
@@ -131,9 +132,9 @@ toteutetaan.
 | GET | `/tapahtumat` | Hae kaikki tapahtumat | Toteutettu |
 | GET | `/tapahtumat/{id}` | Hae yksittäinen tapahtuma | Toteutettu |
 | POST | `/tapahtumat` | Lisää uusi tapahtuma | Toteutettu |
-| PUT | `/tapahtumat/{id}` | Korvaa tapahtuman tiedot | Suunniteltu |
+| PUT | `/tapahtumat/{id}` | Korvaa tapahtuman tiedot | Toteutettu |
 | PATCH | `/tapahtumat/{id}` | Päivitä osa tapahtuman tiedoista | Suunniteltu |
-| DELETE | `/tapahtumat/{id}` | Poista tapahtuma | Suunniteltu |
+| DELETE | `/tapahtumat/{id}` | Poista tapahtuma | Toteutettu |
  
 ---
  
@@ -490,23 +491,21 @@ curl -X DELETE http://localhost:8080/tapahtumat/1
  
 | Koodi | Merkitys | Milloin |
 |---|---|---|
-| `200 OK` | Pyyntö onnistui | GET, PUT, PATCH |
+| `200 OK` | Pyyntö onnistui | GET, PUT |
 | `201 Created` | Resurssi luotiin | POST |
 | `204 No Content` | Onnistui, ei palautettavaa sisältöä | DELETE |
-| `400 Bad Request` | Virheellinen pyyntö tai puuttuva pakollinen kenttä | POST, PUT, PATCH |
-| `404 Not Found` | Pyydettyä resurssia ei löytynyt | GET, PUT, PATCH, DELETE yksittäiselle id:lle |
+| `400 Bad Request` | Virheellinen JSON, polku-id tai puuttuva/virheellinen pakollinen kenttä | POST, PUT tai virheellinen id |
+| `404 Not Found` | Pyydettyä resurssia ei löytynyt | GET, PUT, DELETE yksittäiselle id:lle |
+| `405 Method Not Allowed` | HTTP-metodia ei tueta resurssipolulla | Väärä metodi tunnetulla polulla |
+| `415 Unsupported Media Type` | Pyynnön sisältötyyppi ei ole JSON | POST, PUT |
 | `409 Conflict` | Toiminto on ristiriidassa tietokannan nykytilan kanssa | DELETE |
 | `500 Internal Server Error` | Odottamaton palvelinvirhe | – |
  
-**Suunniteltu virhevastauksen rakenne** *(toteutetaan validoinnin yhteydessä)*
+Virhevastauksen runko sisältää virheen kuvauksen:
  
 ```json
 {
-  "timestamp": "2026-09-16T10:15:30",
-  "status": 404,
-  "error": "Not Found",
-  "message": "Tapahtumaa id:llä 42 ei löytynyt",
-  "path": "/tapahtumat/42"
+  "virhe": "Pyynnön pakolliset kentät puuttuvat tai sisältävät virheellisiä arvoja"
 }
 ```
  
