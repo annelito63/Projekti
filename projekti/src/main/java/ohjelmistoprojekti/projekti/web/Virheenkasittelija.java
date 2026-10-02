@@ -6,8 +6,11 @@ import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 /**
@@ -30,6 +33,24 @@ public class Virheenkasittelija {
     public ResponseEntity<Map<String, String>> kasitteleVaaraTyyppi(MethodArgumentTypeMismatchException ex) {
         return ResponseEntity.badRequest()
                 .body(virhe("Polkuparametri '" + ex.getName() + "' on väärää tyyppiä"));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> kasitteleValidointivirhe(MethodArgumentNotValidException ex) {
+        return ResponseEntity.badRequest()
+                .body(virhe("Pyynnön pakolliset kentät puuttuvat tai sisältävät virheellisiä arvoja"));
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<Map<String, String>> kasitteleVaaranHttpMetodin(HttpRequestMethodNotSupportedException ex) {
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(virhe("HTTP-metodia ei tueta tällä resurssipolulla"));
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<Map<String, String>> kasitteleVaaranSisaltotyypin(HttpMediaTypeNotSupportedException ex) {
+        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+                .body(virhe("Pyynnön Content-Type ei ole tuettu; käytä application/json"));
     }
 
     // Kaikki muut odottamattomat virheet -> selkeä 500, ei stack tracea asiakkaalle
