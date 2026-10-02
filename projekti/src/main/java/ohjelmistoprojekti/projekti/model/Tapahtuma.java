@@ -30,13 +30,11 @@ public class Tapahtuma {
     private String kaupunki;
     private String paikka;
     private String kuvaus;
-<<<<<<< HEAD
+
 
     @NotNull(message= "Lippujen määrä ei voi olla tyhjä")
-    private int maara;
-=======
     private Integer maara; // oli: private int maara;
->>>>>>> f1ea46a38c85a32ca05282e2af1aa3823fbf3d31
+
 
     @JsonIgnoreProperties("tapahtumaid")
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "tapahtumaid")

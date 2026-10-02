@@ -31,15 +31,15 @@ public class TapahtumaController {
     }
 
     @PostMapping("/tapahtumat")
-<<<<<<< HEAD
-    public ResponseEntity<Tapahtuma> addTapahtuma(@Valid @RequestBody Tapahtuma uusiTapahtuma) {
-=======
+
+
+
     public ResponseEntity<Tapahtuma> addTapahtuma(@RequestBody Tapahtuma uusiTapahtuma) {
         if (!hasRequiredFields(uusiTapahtuma)) {
             return ResponseEntity.badRequest().build();
         }
 
->>>>>>> f1ea46a38c85a32ca05282e2af1aa3823fbf3d31
+
         uusiTapahtuma.setTapahtumaid(null); // kanta generoi id:n itse
         Tapahtuma tallennettu = tapahtumaRepository.save(uusiTapahtuma);
         return ResponseEntity.status(HttpStatus.CREATED).body(tallennettu);
@@ -97,3 +97,4 @@ public class TapahtumaController {
     }
 
 }
+

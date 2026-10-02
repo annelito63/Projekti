@@ -17,6 +17,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotEmpty;
 
+@SuppressWarnings("unused")
 @Entity
 public class Myyntitapahtuma {
 
