@@ -110,7 +110,7 @@ public class KayttajaController {
     }
 
     private KayttajaDto muunna(Kayttaja kayttaja) {
-        return new KayttajaDto(kayttaja.getUserId(), kayttaja.getNimi(), kayttaja.getSahkoposti(),
+        return new KayttajaDto(kayttaja.getUserId(), kayttaja.getNimi(), kayttaja.getSahkoposti(), kayttaja.getSalasana(),
                 kayttaja.getRooli());
     }
 

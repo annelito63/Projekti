@@ -22,6 +22,9 @@ public class Kayttaja {
 
     private String nimi;
     private String sahkoposti;
+    private String salasana;
+
+
 
     @Enumerated(EnumType.STRING)
     private Rooli rooli;
@@ -37,11 +40,12 @@ public class Kayttaja {
     public Kayttaja() {
     }
 
-    public Kayttaja(Long userId, String nimi, String sahkoposti, Rooli rooli,
+    public Kayttaja(Long userId, String nimi, String sahkoposti, String salasana, Rooli rooli,
             List<Myyntitapahtuma> myynnit, List<Tarkastus> tarkastukset) {
         this.userId = userId;
         this.nimi = nimi;
         this.sahkoposti = sahkoposti;
+        this.salasana = salasana;
         this.rooli = rooli;
         this.myynnit = myynnit;
         this.tarkastukset = tarkastukset;
@@ -69,6 +73,14 @@ public class Kayttaja {
 
     public void setSahkoposti(String sahkoposti) {
         this.sahkoposti = sahkoposti;
+    }
+
+        public String getSalasana() {
+        return salasana;
+    }
+
+    public void setSalasana(String salasana) {
+        this.salasana = salasana;
     }
 
     public Rooli getRooli() {
