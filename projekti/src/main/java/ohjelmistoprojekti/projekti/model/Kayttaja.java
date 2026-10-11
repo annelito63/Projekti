@@ -1,10 +1,13 @@
 package ohjelmistoprojekti.projekti.model;
 
 import java.util.List;
+import java.util.Locale;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -21,9 +24,16 @@ public class Kayttaja {
     private Long userId;
 
     private String nimi;
+
+    @Column(nullable = false, unique = true)
     private String sahkoposti;
 
+    @JsonIgnore
+    @Column(nullable = false)
+    private String salasanaHash;
+
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Rooli rooli;
 
     @JsonIgnoreProperties("kayttaja")
@@ -41,7 +51,7 @@ public class Kayttaja {
             List<Myyntitapahtuma> myynnit, List<Tarkastus> tarkastukset) {
         this.userId = userId;
         this.nimi = nimi;
-        this.sahkoposti = sahkoposti;
+        setSahkoposti(sahkoposti);
         this.rooli = rooli;
         this.myynnit = myynnit;
         this.tarkastukset = tarkastukset;
@@ -68,7 +78,15 @@ public class Kayttaja {
     }
 
     public void setSahkoposti(String sahkoposti) {
-        this.sahkoposti = sahkoposti;
+        this.sahkoposti = sahkoposti == null ? null : sahkoposti.trim().toLowerCase(Locale.ROOT);
+    }
+
+    public String getSalasanaHash() {
+        return salasanaHash;
+    }
+
+    public void setSalasanaHash(String salasanaHash) {
+        this.salasanaHash = salasanaHash;
     }
 
     public Rooli getRooli() {
