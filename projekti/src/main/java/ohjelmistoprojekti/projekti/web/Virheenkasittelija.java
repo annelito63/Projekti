@@ -6,8 +6,10 @@ import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -51,6 +53,18 @@ public class Virheenkasittelija {
     public ResponseEntity<Map<String, String>> kasitteleVaaranSisaltotyypin(HttpMediaTypeNotSupportedException ex) {
         return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
                 .body(virhe("Pyynnön Content-Type ei ole tuettu; käytä application/json"));
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, String>> kasitteleHttpStatusPoikkeus(ResponseStatusException ex) {
+        String viesti = ex.getReason() == null ? ex.getStatusCode().toString() : ex.getReason();
+        return ResponseEntity.status(ex.getStatusCode()).body(virhe(viesti));
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<Map<String, String>> kasitteleKayttooikeudenPuute(AuthorizationDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(virhe("Käyttäjällä ei ole oikeutta tähän toimintoon"));
     }
 
     // Kaikki muut odottamattomat virheet -> selkeä 500, ei stack tracea asiakkaalle
