@@ -116,18 +116,39 @@ Käyttöliittymä:
 
     Jos tapahtumaa ei löydy annetulla id:llä, palvelin vastaa `404 Not Found`. Jos tapahtuma löytyy, järjestelmä päivittää olemassa olevan entiteetin kentät ja tallentaa muutokset takaisin tietokantaan. Onnistuneen päivityksen jälkeen palvelin palauttaa päivitetyn tapahtuman `200 OK` -vastauksena.
 
-    Tämä toteutus ei vielä sisällä laajempaa liiketoimintalogiikkaa, kuten roolien tarkistusta, pakollisten kenttien validointia tai estoa tapahtuman vähentämisestä alle jo myytyjen lippujen määrän.
+    Tapahtuman muokkaaminen vaatii `YLLAPITAJA`-roolin. Kenttien pakollisuutta validoidaan, mutta liiketoimintatarkistusta, joka estäisi tapahtuman kapasiteetin pienentämisen alle jo myytyjen lippujen määrän, ei vielä ole.
 
     ### Tapahtuman poistaminen
 
     Tapahtuma voidaan poistaa HTTP DELETE -pyynnöllä osoitteeseen `/tapahtumat/{id}`. Jos tapahtuma löytyy, järjestelmä kutsuu `deleteById(id)` ja palauttaa `204 No Content` -vastauksen. Jos tapahtumaa ei löydy, palautetaan `404 Not Found`.
 
-    Tämä poisto on "puhdas tietokantapoisto" eli se poistaa tapahtuman tietokannasta ilman ylimääräistä vahvistuslogiikkaa tai turvallisuustarkistusta. Tämä tarkoittaa, että edistyneemmät käytännöt, kuten vahvistusviesti tai "passiivinen poisto" toteutetaan vielä erikseen, jos niitä tarvitaan.
+    Poisto vaatii `YLLAPITAJA`-roolin. Se on tietokantapoisto ilman ylimääräistä vahvistuslogiikkaa tai passiivista poistoa; tällaiset käytännöt voidaan toteuttaa erikseen, jos niitä tarvitaan.
 
     ### Nykyinen tilanne ja rajoitukset
 
     - Tapahtumien listaus, haku, lisäys, muokkaus ja poisto toimivat perusrajapintatasolla.
     - Rajapinta on toteutettu Spring Bootin REST-controllerilla.
-    - Laajemmat käyttöoikeus- ja liiketoimintarajoitteet (esim. ylläpitäjärooli, myytyjen lippujen estäminen, vahvistusdialogit) eivät ole vielä tämän toteutuksen osana.
+    - Tapahtumien kirjoitustoiminnot on rajattu ylläpitäjälle; kapasiteetin pienentämistä jo myytyjen lippujen alle ei vielä estetä.
 
+## Kirjautuminen ja käyttöoikeudet
 
+Yksityiskohtaiset ohjeet rekisteröitymiseen, bootstrap-ylläpitäjään, roolien oikeuksiin ja API-testaukseen löytyvät [autentikoinnin dokumentaatiosta](./dokumentaatio/Autentikointi.md).
+
+REST-rajapinta käyttää HTTP Basic -kirjautumista ja salasanojen BCrypt-tiivistystä. Jokainen kirjautumista vaativa pyyntö sisältää `Authorization: Basic ...` -otsakkeen. Rekisteröinti on julkinen, ja sillä luodaan aina `VERKKOKAUPAN_ASIAKAS`-roolin käyttäjä:
+
+```http
+POST /auth/register
+Content-Type: application/json
+
+{"nimi":"Asiakas","sahkoposti":"asiakas@example.fi","salasana":"vähintään8merkkiä"}
+```
+
+Kirjautumisen voi tarkistaa osoitteesta `GET /auth/me`. Käyttäjä voi hakea omat tilauksensa osoitteista `GET /myynnit` ja `GET /myynnit/{id}`. Muiden käyttäjien tilaukset palauttavat asiakkaalle `404 Not Found`, eikä asiakkaan myyntipyynnössä annettu käyttäjä-ID muuta myynnin omistajaa.
+
+Tapahtumien listaus ja yksittäisen tapahtuman haku ovat julkisia verkkokaupan selaamista varten. Tapahtumien luonti, muokkaus ja poisto vaativat `YLLAPITAJA`-roolin. `YLLAPITAJA` toimii myös tapahtumien järjestäjänä. `MYYJA` ja `YLLAPITAJA` voivat nähdä kaikki myynnit; asiakkaat näkevät vain omansa. Henkilöstön käyttäjät luo ylläpitäjä kirjautuneena osoitteessa `POST /auth/users` antamalla lisäksi roolin, esimerkiksi `{"rooli":"MYYJA"}`.
+
+Ensimmäinen ylläpitäjä luodaan käynnistyksen yhteydessä vain, kun ympäristömuuttujat `BOOTSTRAP_ADMIN_EMAIL` ja `BOOTSTRAP_ADMIN_PASSWORD` on asetettu. `BOOTSTRAP_ADMIN_NAME` on valinnainen. Salasanaa ei tallenneta selväkielisenä eikä sitä palauteta API-vastauksissa. Ilman bootstrap-asetuksia avoin rekisteröinti ei voi luoda ylläpitäjän oikeuksia.
+
+Koska HTTP Basic lähettää tunnistetiedot jokaisessa pyynnössä, tuotantoympäristössä rajapintaa tulee käyttää vain HTTPS-yhteyden kautta.
+
+Roolit ovat `YLLAPITAJA`, `MYYJA`, `OVELLA_TARKASTAVA_HENKILO` ja `VERKKOKAUPAN_ASIAKAS`. Roolien tapahtumatoiminnot rajautuvat yllä mainittuihin reitteihin; ovella tehtävän lipuntarkastuksen erillistä API-toimintoa ei ole vielä toteutettu.

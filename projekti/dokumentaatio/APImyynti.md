@@ -64,9 +64,11 @@ Kaikki alla olevat polut ovat suhteessa base-URLiin, esim.
 | Pyynnön `Content-Type` | `application/json` (POST) |
 | Vastauksen `Content-Type` | `application/json` |
 | Id:n generointi | Tietokanta generoi `myyntiId`-arvon (`GenerationType.AUTO`) |
-| Autentikointi | Ei käytössä tässä vaiheessa |
+| Autentikointi | HTTP Basic vaaditaan. Asiakas näkee vain omat ostot; `MYYJA` ja `YLLAPITAJA` näkevät kaikki. |
  
 ---
+
+Kirjautumisen, käyttöoikeuksien sekä HTTP-pyyntöjen ja automaattisten testien esimerkit ovat [autentikoinnin ohjeessa](./Autentikointi.md).
 
 ## Tietomalli: Myyntitapahtuma
  
