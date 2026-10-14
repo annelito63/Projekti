@@ -1,7 +1,7 @@
 # Myyntitapahtumien hallinta – REST API -dokumentaatio
  
-Tämä dokumentti kuvaa palvelun rajapinnan siltä osin kuin se tarvitaan
-**myyntitapahtumien lisäämiseen, hakemiseen, muokkaamiseen ja poistamiseen**.
+Tämä dokumentti kuvaa toteutetut myyntitapahtumien haku- ja lisäysrajapinnat.
+Myyntitapahtumien muokkaus ja poisto eivät ole toteutettuja rajapintoja.
  
 - **Versio:** 0.1 (Sprint 1)
 - **Sovellus:** `ohjelmistoprojekti.projekti` (Spring Boot)
@@ -12,7 +12,7 @@ Tämä dokumentti kuvaa palvelun rajapinnan siltä osin kuin se tarvitaan
  
 | Toiminto | Tila |
 |---|---|
-| Kaikkien myyntitapahtumien haku | Toteutettu |
+| Myyntitapahtumien haku (roolin sallimassa laajuudessa) | Toteutettu |
 | Yksittäisen myyntitapahtuman haku | Toteutettu |
 | Myyntitapahtuman lisäys | Toteutettu |
 | Myyntitapahtuman muokkaus (PUT / PATCH) | Suunniteltu |
@@ -48,7 +48,7 @@ Tämä dokumentti kuvaa palvelun rajapinnan siltä osin kuin se tarvitaan
 Kaikki alla olevat polut ovat suhteessa base-URLiin, esim.
 `http://localhost:8080/myynnit`.
  
-> **Huom.** `TapahtumaController`-luokassa ei ole luokkatason
+> **Huom.** `MyyntitapahtumaController`-luokassa ei ole luokkatason
 > `@RequestMapping`-annotaatiota, joten polut ovat sellaisenaan juuressa. Jos
 > rajapinnalle lisätään myöhemmin `/api`-etuliite, base-URL muuttuu muotoon
 > `http://localhost:8080/api` ja polut pysyvät muuten samoina.
@@ -64,7 +64,7 @@ Kaikki alla olevat polut ovat suhteessa base-URLiin, esim.
 | Pyynnön `Content-Type` | `application/json` (POST) |
 | Vastauksen `Content-Type` | `application/json` |
 | Id:n generointi | Tietokanta generoi `myyntiId`-arvon (`GenerationType.AUTO`) |
-| Autentikointi | HTTP Basic vaaditaan. Asiakas näkee vain omat ostot; `MYYJA` ja `YLLAPITAJA` näkevät kaikki. |
+| Autentikointi | HTTP Basic vaaditaan. `VERKKOKAUPAN_ASIAKAS` näkee vain omat myyntinsä; `MYYJA` ja `YLLAPITAJA` näkevät kaikki. |
  
 ---
 
@@ -77,11 +77,11 @@ Vastaa luokkaa `ohjelmistoprojekti.projekti.model.Myyntitapahtuma`.
 | Kenttä | Tyyppi | Pakollinen (POST) | Kuvaus |
 |---|---|---|---|
 | `myyntiId` | Long | ei | Myyntitapahtuman yksilöivä tunniste. Palvelin generoi. **Pyynnössä annettu arvo ohitetaan** (kontrolleri nollaa sen ennen tallennusta). |
-| `tapahtuma` | Tapahtuma | kyllä | Tapahtuman ID |
-| `kayttaja` | Kayttaja | kyllä | Käyttäjän ID |
-| `myyntiaika` | LocalDateTime | kyllä | Myyntitapahtuman ajankohta |
-| `kokonaissumma` | double | kyllä | Myyntihinnan kokonaissumma |
-| `myyntirivit` | Myyntirivi[] | ei | Myyntitapahtumaan liittyvät myyntirivit (yksi-moneen-suhde). Palautetaan vastauksissa. |
+| `tapahtuma` | Tapahtuma | kyllä | Myyntiin liittyvä tapahtuma; luontipyynnössä annetaan `tapahtumaId`. |
+| `kayttaja` | Kayttaja | kyllä | Myynnin omistaja; henkilökunnan pyynnössä annetaan `kayttajaId`, asiakkaan myynti liitetään automaattisesti kirjautuneeseen käyttäjään. |
+| `myyntiaika` | LocalDateTime | kyllä | Palvelin asettaa ajan myynnin luonnissa. |
+| `kokonaissumma` | double | kyllä | Palvelin laskee summan lipputyyppien hinnoista ja määristä. |
+| `myyntirivit` | Myyntirivi[] | ei | Myyntiin liittyvät rivit; luontipyynnössä annetaan `rivit`. |
  
  
 ### Esimerkki JSON-esityksestä
@@ -99,8 +99,10 @@ Vastaa luokkaa `ohjelmistoprojekti.projekti.model.Myyntitapahtuma`.
  
 ### Liittyvät tietomallit: Tapahtuma, Kayttaja, Myyntirivi
  
-Viittaukset toisiin luokkiin jätetään serialisoinnissa pois
-(`@JsonIgnoreProperties`), joten vastaus ei mene silmukkaan.
+Vastaus sisältää tapahtuma-, käyttäjä- ja myyntirivitietoja sisäkkäisinä JSON-objekteina.
+Niiden takaisinviittauksia rajataan `@JsonIgnoreProperties`-annotaatioilla,
+jotta sarjallistaminen ei muodosta päättymätöntä silmukkaa. Salasanatiivistettä
+ei palauteta API-vastauksessa.
 
 Käsittelyä varten luotu MyyntitapahtumaLuontiDTO.java ja MyyntiriviLuontiDTO.java 
 ---
@@ -109,9 +111,9 @@ Käsittelyä varten luotu MyyntitapahtumaLuontiDTO.java ja MyyntiriviLuontiDTO.j
  
 | Metodi | Polku | Kuvaus | Tila |
 |---|---|---|---|
-| GET | `/myynnit` | Hae kaikki myyntitapahtumat | Toteutettu |
-| GET | `/myynnit/{id}` | Hae yksittäinen myyntitapahtuma | Toteutettu |
-| POST | `/myynnit` | Lisää uusi myyntitapahtuma | Toteutettu |
+| GET | `/myynnit` | Hae käyttäjän roolin sallimat myyntitapahtumat | Toteutettu |
+| GET | `/myynnit/{id}` | Hae yksittäinen myyntitapahtuma, jos käyttäjällä on siihen oikeus | Toteutettu |
+| POST | `/myynnit` | Lisää myyntitapahtuma | Toteutettu |
 | PUT | `/myynnit/{id}` | Korvaa myyntitapahtuman tiedot | Suunniteltu |
 | PATCH | `/myynnit/{id}` | Päivitä osa myyntitapahtuman tiedoista | Suunniteltu |
 | DELETE | `/myynnit/{id}` | Poista myyntitapahtuma | Suunniteltu |
@@ -119,7 +121,8 @@ Käsittelyä varten luotu MyyntitapahtumaLuontiDTO.java ja MyyntiriviLuontiDTO.j
 ---
 ### GET /myynnit
  
-Palauttaa listan kaikista myyntitapahtumista.
+Palauttaa myyntitapahtumat kirjautuneen käyttäjän roolin mukaisesti.
+Asiakas saa vain omat myyntinsä; myyjä ja ylläpitäjä saavat kaikki myynnit.
  
 **Metodi ja polku**
  
@@ -133,13 +136,14 @@ Ei polkuparametreja.
  
 **Query-parametrit**
  
-Tällä hetkellä ei tuettuja query-parametreja. Seuraavat on suunniteltu ja
-niille on jo olemassa hakumetodit `TapahtumaRepository`-rajapinnassa:
+Tällä hetkellä ei tuettuja query-parametreja. Repositoryssa on sisäiset
+hakumetodit käyttäjän ja tapahtuman perusteella, mutta niitä ei ole julkaistu
+query-parametreina:
  
 | Parametri | Tyyppi | Pakollinen | Oletus | Kuvaus | Tila |
 |---|---|---|---|---|---|
-| `kayttaja` | String | ei | – | Palauttaa vain myyntitapahtumat, joiden nimi täsmää (`findByKayttaja`) | Suunniteltu |
-| `tapahtuma` | String | ei | – | Palauttaa vain myyntitapahtumat tietyssä tapahtumassa (`findByTapahtuma`) | Suunniteltu |
+| `kayttaja` | Long | ei | – | Suodatus käyttäjän tunnisteella (`MyyntitapahtumaRepository.findByKayttaja`) | Suunniteltu |
+| `tapahtuma` | Long | ei | – | Suodatus tapahtuman tunnisteella (`MyyntitapahtumaRepository.findByTapahtuma`) | Suunniteltu |
 
  
 **Pyynnön sisältö**
@@ -151,31 +155,36 @@ Ei sisältöä.
 ```json
 [
   {
-    "myyntiid": 1,
-    "tapahtuma": 1,
-    "kayttaja": 1,
+    "myyntiId": 1,
+    "tapahtuma": { "tapahtumaid": 1, "nimi": "Esimerkkitapahtuma" },
+    "kayttaja": {
+      "userId": 1,
+      "nimi": "Aino Asiakas",
+      "sahkoposti": "aino@example.fi",
+      "rooli": "VERKKOKAUPAN_ASIAKAS"
+    },
     "myyntiaika": "2026-06-12T19:00:00",
     "kokonaissumma": 50.95,
-    "myyntirivit": []
-  },
-  {
-    "myyntiid": 2,
-    "tapahtuma": 2,
-    "kayttaja": 1,
-    "myyntiaika": "2026-07-18T12:00:00",
-    "kokonaissumma": 39.95,
-    "myyntirivit": []
+    "myyntirivit": [
+      { "myyntiriviId": 1, "maara": 1, "yksikkohinta": 50.95, "rivisumma": 50.95 }
+    ]
   }
 ]
 ```
+
+Esimerkki on rakenteeltaan lyhennetty. Sisäkkäisten tapahtuma- ja
+myyntiriviobjektien muut kentät riippuvat niiden tietomalleista.
  
 Jos myyntitapahtumia ei ole, vastaus on `200 OK` ja tyhjä lista `[]`.
  
 **Esimerkkikutsu**
  
 ```bash
-curl http://localhost:8080/myynnit
+curl -u "asiakas@example.fi:salasana" http://localhost:8080/myynnit
 ```
+
+Yllä olevan pyynnön asiakasrooli saa vain omat myyntinsä. Myyjän tai
+ylläpitäjän tunnuksilla sama reitti palauttaa kaikki myyntitapahtumat.
  
 ---
  
@@ -207,23 +216,31 @@ Ei sisältöä.
  
 ```json
 {
-  "myyntiid": 1,
-  "tapahtuma": 1,
-  "kayttaja": 1,
+  "myyntiId": 1,
+  "tapahtuma": { "tapahtumaid": 1, "nimi": "Esimerkkitapahtuma" },
+  "kayttaja": {
+    "userId": 1,
+    "nimi": "Aino Asiakas",
+    "sahkoposti": "aino@example.fi",
+    "rooli": "VERKKOKAUPAN_ASIAKAS"
+  },
   "myyntiaika": "2026-06-12T19:00:00",
   "kokonaissumma": 50.95,
-  "myyntirivit": []
+  "myyntirivit": [
+    { "myyntiriviId": 1, "maara": 1, "yksikkohinta": 50.95, "rivisumma": 50.95 }
+  ]
 }
 ```
  
 **Vastaus: 404 Not Found**
  
-Tapahtumaa annetulla id:llä ei löytynyt. Vastauksella ei ole sisältöä.
+Myyntiä ei löytynyt tai asiakkaalla ei ole oikeutta nähdä toisen käyttäjän
+myyntiä. Vastauksella ei ole sisältöä.
  
 **Esimerkkikutsu**
  
 ```bash
-curl http://localhost:8080/myynnit/1
+curl -u "asiakas@example.fi:salasana" http://localhost:8080/myynnit/1
 ```
  
 ---
@@ -252,13 +269,17 @@ Ei query-parametreja.
 ```
 Content-Type: application/json
 ```
+
+Asiakas voi luoda myynnin vain itselleen. Henkilöstöroolien (`MYYJA`,
+`YLLAPITAJA`) pyynnöissä `kayttajaId` on pakollinen. Asiakkaan pyynnössä
+`kayttajaId` on vapaaehtoinen ja ohitetaan; myynti liitetään kirjautuneeseen
+asiakkaaseen.
  
 **Pyynnön sisältö**
  
 ```json
 {
   "tapahtumaId": 1,
-  "kayttajaId": 1,
   "rivit": [
     {
       "lipputyyppiId": 1,
@@ -267,26 +288,37 @@ Content-Type: application/json
   ]
 }
 ```
+
+Esimerkki on asiakkaan pyyntö. Myyjän tai ylläpitäjän pyyntöön lisätään
+`"kayttajaId": 1`, joka viittaa olemassa olevaan käyttäjään.
  
 **Vastaus: 201 Created**
  
-Palauttaa luodun tapahtuman generoidulla tunnisteella.
+Palauttaa luodun myyntitapahtuman generoidulla tunnisteella.
  
 ```json
 {
-  "myyntiid": 1,
-  "tapahtuma": 1,
-  "kayttaja": 1,
+  "myyntiId": 1,
+  "tapahtuma": { "tapahtumaid": 1, "nimi": "Esimerkki" },
+  "kayttaja": {
+    "userId": 1,
+    "nimi": "Aino Asiakas",
+    "sahkoposti": "aino@example.fi",
+    "rooli": "VERKKOKAUPAN_ASIAKAS"
+  },
   "myyntiaika": "2026-06-12T19:00:00",
   "kokonaissumma": 50.95,
-  "myyntirivit": null
+  "myyntirivit": []
 }
 ```
+
+Esimerkki näyttää vastauksen rakenteen lyhennettynä. Tapahtuma- ja
+myyntiriviobjektit sisältävät lisäksi omat mallinsa kentät.
  
 **Vastaus: 400 Bad Request**
  
-JSON on syntaktisesti virheellinen, pakollisia tunnisteita tai myyntirivejä
-puuttuu tai rivin määrä ei ole positiivinen.
+JSON on syntaktisesti virheellinen, tapahtumatunniste tai rivit puuttuvat,
+rivin lipputyyppitunniste puuttuu tai rivin määrä ei ole positiivinen.
 
 **Vastaus: 404 Not Found**
 
@@ -296,10 +328,10 @@ Pyynnössä viitattua tapahtumaa, käyttäjää tai lipputyyppiä ei löydy.
  
 ```bash
 curl -X POST http://localhost:8080/myynnit \
+  -u "asiakas@example.fi:salasana" \
   -H "Content-Type: application/json" \
   -d '{
         "tapahtumaId": 1,
-        "kayttajaId": 1,
         "rivit": [{ "lipputyyppiId": 1, "maara": 1 }]
       }'
 ```
@@ -459,11 +491,16 @@ curl -X DELETE http://localhost:8080/myynnit/1
 | `201 Created` | Resurssi luotiin | POST |
 | `204 No Content` | Onnistui, ei palautettavaa sisältöä | DELETE |
 | `400 Bad Request` | Virheellinen pyyntö tai puuttuva pakollinen kenttä | POST, PUT, PATCH |
+| `401 Unauthorized` | Kirjautuminen puuttuu tai tunnukset ovat virheelliset | Suojatut reitit |
+| `403 Forbidden` | Kirjautuneella käyttäjällä ei ole toimintoon oikeuttavaa roolia | Roolisuojatut reitit |
 | `404 Not Found` | Pyydettyä resurssia ei löytynyt | GET, PUT, PATCH, DELETE yksittäiselle id:lle |
 | `409 Conflict` | Toiminto on ristiriidassa tietokannan nykytilan kanssa | DELETE |
 | `500 Internal Server Error` | Odottamaton palvelinvirhe | – |
  
-**Suunniteltu virhevastauksen rakenne** *(toteutetaan validoinnin yhteydessä)*
+Virhevastauksen yleinen rakenne on `{"virhe":"..."}`. Tuntemattomalle
+myynnille tai asiakkaan toisen käyttäjän myynnille ei palauteta sisältöä.
+
+**Esimerkki oletetusta Springin virhevastauksesta** *(ei tämän API:n sopimus)*
  
 ```json
 {
