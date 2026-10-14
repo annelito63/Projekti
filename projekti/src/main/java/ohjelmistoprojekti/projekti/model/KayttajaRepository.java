@@ -1,6 +1,7 @@
 package ohjelmistoprojekti.projekti.model;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.repository.CrudRepository;
 
@@ -8,8 +9,4 @@ public interface KayttajaRepository extends CrudRepository<Kayttaja, Long> {
     List<Kayttaja> findByNimi(String nimi);
 
     List<Kayttaja> findByRooli(Rooli rooli);
-
-    java.util.Optional<Kayttaja> findBySahkopostiIgnoreCase(String sahkoposti);
-
-    boolean existsBySahkopostiIgnoreCase(String sahkoposti);
 }
