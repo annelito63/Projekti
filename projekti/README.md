@@ -152,3 +152,11 @@ Ensimmäinen ylläpitäjä luodaan käynnistyksen yhteydessä vain, kun ympäris
 Koska HTTP Basic lähettää tunnistetiedot jokaisessa pyynnössä, tuotantoympäristössä rajapintaa tulee käyttää vain HTTPS-yhteyden kautta.
 
 Roolit ovat `YLLAPITAJA`, `MYYJA`, `OVELLA_TARKASTAVA_HENKILO` ja `VERKKOKAUPAN_ASIAKAS`. Roolien tapahtumatoiminnot rajautuvat yllä mainittuihin reitteihin; ovella tehtävän lipuntarkastuksen erillistä API-toimintoa ei ole vielä toteutettu.
+
+## Docker ja Render
+
+Projektin juuressa oleva `Dockerfile` rakentaa sovelluksen Java 17:llä ja käynnistää sen Renderin tarjoamassa `PORT`-portissa. Renderissä luo **Web Service**, valitse **Docker**-ympäristö ja aseta palvelun juurihakemistoksi `projekti` (Maven-projektin hakemisto).
+
+Aseta Renderin ympäristömuuttujiin `BOOTSTRAP_ADMIN_EMAIL` ja `BOOTSTRAP_ADMIN_PASSWORD` ensimmäisen ylläpitäjän luomiseksi. `BOOTSTRAP_ADMIN_NAME` on valinnainen. Älä tallenna tunnuksia Dockerfileen tai lähdekoodiin.
+
+Nykyinen H2-oletustietokanta on muistissa, joten sen tiedot eivät säily sovelluksen uudelleenkäynnistyksissä tai uudelleenjulkaisuissa. Pysyviä tuotantotietoja varten sovellus tulee määrittää käyttämään hallittua tietokantaa.
