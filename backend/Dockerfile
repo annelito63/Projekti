@@ -17,7 +17,7 @@ WORKDIR /app
 COPY pom.xml .
 
 # Kopioi lähdekoodin (src/main/java ja src/main/resources).
-COPY src ./src
+COPY src ./projekti/src
 
 # Kääntää ja paketoi. Tulostiedosto on
 #   target/<artifactId>-<version>.jar
