@@ -2,6 +2,7 @@ package ohjelmistoprojekti.projekti.web;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,6 +32,7 @@ public class TapahtumaController {
     }
 
     @PostMapping("/tapahtumat")
+    @PreAuthorize("hasRole('YLLAPITAJA')")
     public ResponseEntity<Tapahtuma> addTapahtuma(@Valid @RequestBody Tapahtuma uusiTapahtuma) {
         uusiTapahtuma.setTapahtumaid(null); // kanta generoi id:n itse
         Tapahtuma tallennettu = tapahtumaRepository.save(uusiTapahtuma);
@@ -45,6 +47,7 @@ public class TapahtumaController {
     }
 
     @PutMapping("/tapahtumat/{id}")
+    @PreAuthorize("hasRole('YLLAPITAJA')")
     public ResponseEntity<Tapahtuma> updateTapahtuma(@PathVariable Long id, @Valid @RequestBody Tapahtuma tapahtuma) {
         Optional<Tapahtuma> existingTapahtuma = tapahtumaRepository.findById(id);
 
@@ -66,6 +69,7 @@ public class TapahtumaController {
     }
 
     @DeleteMapping("/tapahtumat/{id}")
+    @PreAuthorize("hasRole('YLLAPITAJA')")
     public ResponseEntity<Void> deleteTapahtuma(@PathVariable Long id) {
         Optional<Tapahtuma> existingTapahtuma = tapahtumaRepository.findById(id);
 
@@ -78,4 +82,3 @@ public class TapahtumaController {
     }
 
 }
-

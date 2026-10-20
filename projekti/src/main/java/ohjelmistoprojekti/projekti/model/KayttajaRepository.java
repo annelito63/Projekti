@@ -11,4 +11,6 @@ public interface KayttajaRepository extends CrudRepository<Kayttaja, Long> {
     List<Kayttaja> findByRooli(Rooli rooli);
 
     Optional<Kayttaja> findBySahkopostiIgnoreCase(String sahkoposti);
+
+    boolean existsBySahkopostiIgnoreCase(String sahkoposti);
 }

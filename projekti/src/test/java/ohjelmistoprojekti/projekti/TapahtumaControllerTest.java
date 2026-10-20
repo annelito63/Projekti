@@ -8,17 +8,25 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 
 import java.util.Optional;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
 
+import ohjelmistoprojekti.projekti.model.Kayttaja;
+import ohjelmistoprojekti.projekti.model.KayttajaRepository;
+import ohjelmistoprojekti.projekti.model.Rooli;
 import ohjelmistoprojekti.projekti.model.Tapahtuma;
 import ohjelmistoprojekti.projekti.model.TapahtumaRepository;
 
@@ -33,21 +41,41 @@ class TapahtumaControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private KayttajaRepository kayttajaRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @BeforeEach
+    void luoYllapitaja() {
+        Kayttaja kayttaja = new Kayttaja();
+        kayttaja.setNimi("Testiylläpitäjä");
+        kayttaja.setSahkoposti("testiyllapitaja@example.test");
+        kayttaja.setSalasanaHash(passwordEncoder.encode("Testisalasana123"));
+        kayttaja.setRooli(Rooli.YLLAPITAJA);
+        kayttajaRepository.save(kayttaja);
+    }
+
+    private ResultActions performAuthenticated(MockHttpServletRequestBuilder request) throws Exception {
+        return mockMvc.perform(request.with(user("testiyllapitaja").roles("YLLAPITAJA")));
+    }
+
     @Test
     void tapahtumanHakeminenTuntemattomallaIdllaPalauttaa404() throws Exception {
-        mockMvc.perform(get("/tapahtumat/{id}", Long.MAX_VALUE))
+        performAuthenticated(get("/tapahtumat/{id}", Long.MAX_VALUE))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void tapahtumanHakuVirheellisellaIdTyypillaPalauttaa400() throws Exception {
-        mockMvc.perform(get("/tapahtumat/abc"))
+        performAuthenticated(get("/tapahtumat/abc"))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void tapahtumanLuontiVirheellisellaJsonillaPalauttaa400() throws Exception {
-        mockMvc.perform(post("/tapahtumat")
+        performAuthenticated(post("/tapahtumat")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{"))
                 .andExpect(status().isBadRequest());
@@ -55,7 +83,7 @@ class TapahtumaControllerTest {
 
     @Test
     void tapahtumanLuontiVaarallaSisaltotyypillaPalauttaa415() throws Exception {
-        mockMvc.perform(post("/tapahtumat")
+        performAuthenticated(post("/tapahtumat")
                 .contentType(MediaType.TEXT_PLAIN)
                 .content("{}"))
                 .andExpect(status().isUnsupportedMediaType());
@@ -63,7 +91,7 @@ class TapahtumaControllerTest {
 
     @Test
     void resurssipolunPostPalauttaa405() throws Exception {
-        mockMvc.perform(post("/tapahtumat/{id}", Long.MAX_VALUE)
+        performAuthenticated(post("/tapahtumat/{id}", Long.MAX_VALUE)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
                 .andExpect(status().isMethodNotAllowed());
@@ -71,7 +99,7 @@ class TapahtumaControllerTest {
 
     @Test
     void tapahtumanLuontiPuuttuvillaPakollisillaKentillaPalauttaa400() throws Exception {
-        mockMvc.perform(post("/tapahtumat")
+        performAuthenticated(post("/tapahtumat")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"nimi\":\"Tapahtuma\",\"tyyppi\":\"Konsertti\","
                         + "\"aika\":\"2026-10-10T18:00\",\"kaupunki\":\"Oulu\",\"maara\":1}"))
@@ -80,7 +108,7 @@ class TapahtumaControllerTest {
 
     @Test
     void tapahtumanPaivitysTuntemattomallaIdllaPalauttaa404() throws Exception {
-        mockMvc.perform(put("/tapahtumat/{id}", Long.MAX_VALUE)
+        performAuthenticated(put("/tapahtumat/{id}", Long.MAX_VALUE)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"nimi\":\"Tapahtuma\",\"tyyppi\":\"Konsertti\","
                         + "\"aika\":\"2026-10-10T18:00\",\"kaupunki\":\"Oulu\","
@@ -98,7 +126,7 @@ class TapahtumaControllerTest {
         tapahtuma.setPaikka("Areena");
         Long id = tapahtumaRepository.save(tapahtuma).getTapahtumaid();
 
-        mockMvc.perform(put("/tapahtumat/{id}", id)
+        performAuthenticated(put("/tapahtumat/{id}", id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"nimi\":\"Tapahtuma\",\"tyyppi\":\"Konsertti\","
                         + "\"aika\":\"2026-10-10T18:00\",\"kaupunki\":\"Oulu\",\"maara\":1}"))
@@ -107,7 +135,7 @@ class TapahtumaControllerTest {
 
     @Test
     void tapahtumanPoistoTuntemattomallaIdllaPalauttaa404() throws Exception {
-        mockMvc.perform(delete("/tapahtumat/{id}", Long.MAX_VALUE))
+        performAuthenticated(delete("/tapahtumat/{id}", Long.MAX_VALUE))
                 .andExpect(status().isNotFound());
     }
 

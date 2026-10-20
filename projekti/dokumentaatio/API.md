@@ -54,7 +54,9 @@ Kaikki alla olevat polut ovat suhteessa base-URLiin, esim.
 > `http://localhost:8080/api` ja polut pysyvät muuten samoina.
  
 ---
- 
+
+Autentikoinnin rekisteröinti-, rooli- ja testausesimerkit ovat [autentikoinnin ohjeessa](./Autentikointi.md).
+
 ## Yleiset periaatteet
  
 | Asia | Kuvaus |
@@ -64,7 +66,7 @@ Kaikki alla olevat polut ovat suhteessa base-URLiin, esim.
 | Pyynnön `Content-Type` | `application/json` (POST, PUT) |
 | Vastauksen `Content-Type` | `application/json` |
 | Id:n generointi | Tietokanta generoi `tapahtumaid`-arvon (`GenerationType.AUTO`) |
-| Autentikointi | Ei käytössä tässä vaiheessa |
+| Autentikointi | Tapahtumien GET-reitit ovat julkisia; lisäys, muokkaus ja poisto vaativat `YLLAPITAJA`-roolin. |
  
 ---
  

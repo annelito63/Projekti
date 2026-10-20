@@ -7,11 +7,14 @@ import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import ohjelmistoprojekti.projekti.model.Kayttaja;
 import ohjelmistoprojekti.projekti.model.KayttajaRepository;
@@ -45,24 +48,39 @@ public class MyyntitapahtumaController {
     }
 
     @GetMapping("/myynnit")
-    public Iterable<Myyntitapahtuma> findAllMyynnit() {
+    public Iterable<Myyntitapahtuma> findAllMyynnit(Authentication authentication) {
+        if (hasAnyRole(authentication, "YLLAPITAJA", "MYYJA")) {
             return myyntitapahtumaRepository.findAll();
+        }
+        requireRole(authentication, "VERKKOKAUPAN_ASIAKAS");
+        return myyntitapahtumaRepository.findByKayttaja(currentUser(authentication));
     }
 
     @GetMapping("/myynnit/{id}")
-    public ResponseEntity<Myyntitapahtuma> findMyynti(@PathVariable Long id) {
+    public ResponseEntity<Myyntitapahtuma> findMyynti(@PathVariable Long id, Authentication authentication) {
         Optional<Myyntitapahtuma> myynti = myyntitapahtumaRepository.findById(id);
+        if (myynti.isPresent() && !hasAnyRole(authentication, "YLLAPITAJA", "MYYJA")) {
+            requireRole(authentication, "VERKKOKAUPAN_ASIAKAS");
+            if (myynti.get().getKayttaja() == null
+                    || !myynti.get().getKayttaja().getUserId().equals(currentUser(authentication).getUserId())) {
+                return ResponseEntity.notFound().build();
+            }
+        }
         return myynti.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping("/myynnit")
-    public ResponseEntity<?> addMyynti(@Valid @RequestBody MyyntitapahtumaLuontiDto pyynto) {
+    @PreAuthorize("hasAnyRole('YLLAPITAJA', 'MYYJA', 'VERKKOKAUPAN_ASIAKAS')")
+    public ResponseEntity<?> addMyynti(
+            @Valid @RequestBody MyyntitapahtumaLuontiDto pyynto,
+            Authentication authentication) {
 
         if (pyynto.getTapahtumaId() == null) {
             return ResponseEntity.badRequest().body("tapahtumaId on pakollinen");
         }
-        if (pyynto.getKayttajaId() == null) {
+        boolean asiakas = isRole(authentication, "VERKKOKAUPAN_ASIAKAS");
+        if (!asiakas && pyynto.getKayttajaId() == null) {
             return ResponseEntity.badRequest().body("kayttajaId on pakollinen");
         }
         if (pyynto.getRivit() == null || pyynto.getRivit().isEmpty()) {
@@ -75,10 +93,16 @@ public class MyyntitapahtumaController {
                     .body("Tapahtumaa id:llä " + pyynto.getTapahtumaId() + " ei löytynyt");
         }
 
-        Optional<Kayttaja> kayttajaOpt = kayttajaRepository.findById(pyynto.getKayttajaId());
-        if (kayttajaOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Käyttäjää id:llä " + pyynto.getKayttajaId() + " ei löytynyt");
+        Kayttaja myynninKayttaja;
+        if (asiakas) {
+            myynninKayttaja = currentUser(authentication);
+        } else {
+            Optional<Kayttaja> kayttajaOpt = kayttajaRepository.findById(pyynto.getKayttajaId());
+            if (kayttajaOpt.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Käyttäjää id:llä " + pyynto.getKayttajaId() + " ei löytynyt");
+            }
+            myynninKayttaja = kayttajaOpt.get();
         }
 
         for (MyyntiriviLuontiDto rivi : pyynto.getRivit()) {
@@ -96,7 +120,7 @@ public class MyyntitapahtumaController {
 
         Myyntitapahtuma myynti = new Myyntitapahtuma();
         myynti.setTapahtuma(tapahtumaOpt.get());
-        myynti.setKayttaja(kayttajaOpt.get());
+        myynti.setKayttaja(myynninKayttaja);
         myynti.setMyyntiaika(LocalDateTime.now());
 
         List<Myyntirivi> rivit = new ArrayList<>();
@@ -125,5 +149,30 @@ public class MyyntitapahtumaController {
         Myyntitapahtuma tallennettu = myyntitapahtumaRepository.save(myynti);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(tallennettu);
+    }
+
+    private Kayttaja currentUser(Authentication authentication) {
+        return kayttajaRepository.findBySahkopostiIgnoreCase(authentication.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+    }
+
+    private void requireRole(Authentication authentication, String role) {
+        if (!isRole(authentication, role)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+    }
+
+    private boolean hasAnyRole(Authentication authentication, String... roles) {
+        for (String role : roles) {
+            if (isRole(authentication, role)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isRole(Authentication authentication, String role) {
+        return authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_" + role));
     }
 }

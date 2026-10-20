@@ -3,8 +3,6 @@ package ohjelmistoprojekti.projekti.model;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.antlr.v4.runtime.misc.NotNull;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.CascadeType;
@@ -15,7 +13,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 
 @SuppressWarnings("unused")
 @Entity
@@ -35,10 +34,10 @@ public class Myyntitapahtuma {
     @JoinColumn(name = "user_id")
     private Kayttaja kayttaja;
 
-    @NotEmpty(message= "Myyntitapahtumalla pitää olla aika")
+    @NotNull(message = "Myyntitapahtumalla pitää olla aika")
     private LocalDateTime myyntiaika;
 
-    @NotEmpty(message= "Myyntitapahtumalla pitää olla kokonaissumma")
+    @PositiveOrZero(message = "Kokonaissumma ei voi olla negatiivinen")
     private double kokonaissumma;
 
     @JsonIgnoreProperties("myynti")
