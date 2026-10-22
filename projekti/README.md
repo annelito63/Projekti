@@ -413,18 +413,3 @@ Pelkkä yksi testiluokka ja `System.out`-tulostukset terminaalissa:
 ```powershell
 .\mvnw.cmd '-Dtest=MyyntitapahtumaDtoTest' '-Dsurefire.useFile=false' test
 ```
-
-### DTO-testit
-
-`MyyntitapahtumaDtoTest` tarkistaa, että web-kerroksen DTO:t säilyttävät niille annetut tiedot oikein.
-
-**MyyntiriviLuontiDto:** oletuskonstruktori luo olion oletusarvoilla (`lipputyyppiId = null`, `maara = 0`), parametrikonstruktori asettaa kentät ja getterit ja setterit toimivat.
-
-**MyyntitapahtumaLuontiDto:** oletuskonstruktori luo olion oletusarvoilla (`tapahtumaId`, `kayttajaId` ja `rivit` ovat `null`), parametrikonstruktori asettaa kaikki kentät ja `rivit`-lista sekä sen sisältämä `MyyntiriviLuontiDto` säilyvät oikeina.
-
-Testi tulostaa terminaaliin jokaisen testin nimen, käytetyt arvot ja onnistumisilmoituksen. Testin onnistuminen perustuu silti JUnitin `assert`-tarkistuksiin.
-
-### Tunnetut puutteet testeissä
-
-- Lipun tarkastuksella ovella ei ole vielä API:a, joten sitä ei testata.
-- Kapasiteettitarkistusta (tapahtuman kapasiteettia ei voi pienentää alle myytyjen lippujen) ei ole toteutettu, joten sitäkään ei testata.
