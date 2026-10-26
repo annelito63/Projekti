@@ -30,20 +30,16 @@ public class KayttajaDto {
     @Size(max = 254, message = "sahkoposti saa olla enintään 254 merkkiä")
     private String sahkoposti;
 
-    @NotBlank(message = "salasana on pakollinen")
-    private String salasana;
-
     @NotNull(message = "rooli on pakollinen")
     private Rooli rooli;
 
     public KayttajaDto() {
     }
 
-    public KayttajaDto(Long userId, String nimi, String sahkoposti, String salasana, Rooli rooli) {
+    public KayttajaDto(Long userId, String nimi, String sahkoposti, Rooli rooli) {
         this.userId = userId;
         this.nimi = nimi;
         this.sahkoposti = sahkoposti;
-        this.salasana = salasana;
         this.rooli = rooli;
     }
 

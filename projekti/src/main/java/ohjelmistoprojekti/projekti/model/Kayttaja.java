@@ -1,3 +1,5 @@
+
+
 package ohjelmistoprojekti.projekti.model;
 
 import java.util.List;
@@ -47,7 +49,7 @@ public class Kayttaja {
     public Kayttaja() {
     }
 
-    public Kayttaja(Long userId, String nimi, String sahkoposti, String salasana, Rooli rooli,
+    public Kayttaja(Long userId, String nimi, String sahkoposti, Rooli rooli,
             List<Myyntitapahtuma> myynnit, List<Tarkastus> tarkastukset) {
         this.userId = userId;
         this.nimi = nimi;

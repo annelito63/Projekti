@@ -27,14 +27,14 @@ class ProjektiApplicationTests {
 				null);
 		Lippu tallennettuLippu = lippuRepository.save(tallennettavaLippu);
 
-		Lippu haettuLippu = lippuRepository.findByNimi("VIP-lippu").stream()
+		Lippu haettuLippu = lippuRepository.findByKoodi("VIP-lippu").stream()
 				.findFirst()
 				.orElseThrow();
 
 		System.out.println("Haettu lippu: " + haettuLippu);
 		assertNotNull(haettuLippu.getId());
 		assertEquals(tallennettuLippu.getId(), haettuLippu.getId());
-		assertEquals("VIP-lippu", haettuLippu.getNimi());
+		assertEquals("VIP-lippu", haettuLippu.getKoodi());
 		assertEquals("Pääsy tapahtuman VIP-alueelle", haettuLippu.getKuvaus());
 		assertEquals(49.90, haettuLippu.getHinta());
 		assertNull(haettuLippu.getTapahtumaid());

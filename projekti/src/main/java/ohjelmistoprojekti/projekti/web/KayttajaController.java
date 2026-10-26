@@ -1,4 +1,5 @@
-package ohjelmistoprojekti.projekti.web;
+
+    package ohjelmistoprojekti.projekti.web;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -110,7 +111,7 @@ public class KayttajaController {
     }
 
     private KayttajaDto muunna(Kayttaja kayttaja) {
-        return new KayttajaDto(kayttaja.getUserId(), kayttaja.getNimi(), kayttaja.getSahkoposti(), kayttaja.getSalasana(),
+        return new KayttajaDto(kayttaja.getUserId(), kayttaja.getNimi(), kayttaja.getSahkoposti(),
                 kayttaja.getRooli());
     }
 
