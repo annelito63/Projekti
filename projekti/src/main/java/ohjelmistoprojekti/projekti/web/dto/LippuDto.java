@@ -1,27 +1,18 @@
 package ohjelmistoprojekti.projekti.web.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import ohjelmistoprojekti.projekti.model.Lipputyyppi;
 import ohjelmistoprojekti.projekti.model.Tapahtuma;
 
 public class LippuDto {
     private Long id;
 
-    @JsonIgnoreProperties("liput")
-    @ManyToOne
-    @JoinColumn(name = "tapahtumaid")
     private Tapahtuma tapahtumaid;
 
     private String koodi;
     private String kuvaus;
     private double hinta;
 
-    @JsonIgnoreProperties("liput")
-    @ManyToOne
-    @JoinColumn(name = "lipputyyppi_id")
     private Lipputyyppi lipputyyppi;
 
     private boolean kaytetty = false;
