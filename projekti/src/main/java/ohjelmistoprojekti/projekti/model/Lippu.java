@@ -1,6 +1,6 @@
 package ohjelmistoprojekti.projekti.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -16,7 +16,7 @@ public class Lippu {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @JsonIgnoreProperties("liput")
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "tapahtumaid")
     private Tapahtuma tapahtumaid;
@@ -25,7 +25,7 @@ public class Lippu {
     private String kuvaus;
     private double hinta;
 
-    @JsonIgnoreProperties("liput")
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "lipputyyppi_id")
     private Lipputyyppi lipputyyppi;
