@@ -21,7 +21,7 @@ public class Lippu {
     @JoinColumn(name = "tapahtumaid")
     private Tapahtuma tapahtumaid;
 
-    private String nimi;
+    private String koodi;
     private String kuvaus;
     private double hinta;
 
@@ -30,13 +30,15 @@ public class Lippu {
     @JoinColumn(name = "lipputyyppi_id")
     private Lipputyyppi lipputyyppi;
 
+    private boolean kaytetty = false;
+
     public Lippu() {
     }
 
-    public Lippu(Long id, Tapahtuma tapahtumaid, String nimi, String kuvaus, double hinta, Lipputyyppi lipputyyppi) {
+    public Lippu(Long id, Tapahtuma tapahtumaid, String koodi, String kuvaus, double hinta, Lipputyyppi lipputyyppi) {
         this.id = id;
         this.tapahtumaid = tapahtumaid;
-        this.nimi = nimi;
+        this.koodi = koodi;
         this.kuvaus = kuvaus;
         this.hinta = hinta;
         this.lipputyyppi = lipputyyppi;
@@ -58,12 +60,20 @@ public class Lippu {
         this.tapahtumaid = tapahtumaid;
     }
 
-    public String getNimi() {
-        return nimi;
+    public boolean isKaytetty() {
+        return kaytetty;
     }
 
-    public void setNimi(String nimi) {
-        this.nimi = nimi;
+    public void setKaytetty(boolean kaytetty) {
+        this.kaytetty = kaytetty;
+    }
+
+    public String getKoodi() {
+        return koodi;
+    }
+
+    public void setKoodi(String koodi) {
+        this.koodi = koodi;
     }
 
     public String getKuvaus() {
@@ -92,7 +102,7 @@ public class Lippu {
 
     @Override
     public String toString() {
-        return "Lippu [id=" + id + ", tapahtumaid=" + tapahtumaid + ", nimi=" + nimi + ", kuvaus=" + kuvaus
+        return "Lippu [id=" + id + ", tapahtumaid=" + tapahtumaid + ", koodi=" + koodi + ", kuvaus=" + kuvaus
                 + ", hinta=" + hinta + ", lipputyyppi=" + lipputyyppi + "]";
     }
 }
