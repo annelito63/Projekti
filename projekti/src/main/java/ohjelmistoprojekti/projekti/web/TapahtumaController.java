@@ -3,6 +3,7 @@ package ohjelmistoprojekti.projekti.web;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +19,7 @@ import ohjelmistoprojekti.projekti.model.TapahtumaRepository;
 import java.util.Optional;
 
 @RestController
+@CrossOrigin(origins = "*")
 public class TapahtumaController {
 
     private final TapahtumaRepository tapahtumaRepository;
@@ -38,7 +40,7 @@ public class TapahtumaController {
         Tapahtuma tallennettu = tapahtumaRepository.save(uusiTapahtuma);
         return ResponseEntity.status(HttpStatus.CREATED).body(tallennettu);
     }
-    
+
     @GetMapping("/tapahtumat/{id}")
     public ResponseEntity<Tapahtuma> findTapahtuma(@PathVariable Long id) {
         Optional<Tapahtuma> tapahtuma = tapahtumaRepository.findById(id);

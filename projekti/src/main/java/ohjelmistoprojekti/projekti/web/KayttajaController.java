@@ -1,5 +1,5 @@
 
-    package ohjelmistoprojekti.projekti.web;
+package ohjelmistoprojekti.projekti.web;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,6 +25,7 @@ import ohjelmistoprojekti.projekti.model.TarkastusRepository;
 import ohjelmistoprojekti.projekti.web.dto.KayttajaDto;
 
 @RestController
+@CrossOrigin(origins = "*")
 public class KayttajaController {
 
     private final KayttajaRepository kayttajaRepository;
