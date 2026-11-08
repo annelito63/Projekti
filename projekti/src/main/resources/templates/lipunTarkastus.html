@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lipun tarkastus</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        input,
+        button {
+            padding: 10px;
+            margin: 5px;
+        }
+
+        .lippu {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .kaytetty {
+            color: red;
+            font-weight: bold;
+        }
+
+        .kayttamaton {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <h1>Lipun tarkastus</h1>
+
+    <input type="text" id="koodi" placeholder="Anna lippukoodi">
+    <button onclick="haeLippu()">Hae lippu</button>
+
+    <div id="tulos"></div>
+
+    <script>
+
+        let nykyinenLippuId = null;
+
+        async function haeLippu() {
+
+            const koodi = document.getElementById("koodi").value;
+
+            try {
+
+                const response = await fetch(
+                    `http://localhost:8080/ticket/ticket?koodi=${encodeURIComponent(koodi)}`
+                );
+
+                if (!response.ok) {
+                    throw new Error("Lippua ei löytynyt");
+                }
+
+                const lippu = await response.json();
+
+                nykyinenLippuId = lippu.id;
+
+                document.getElementById("tulos").innerHTML = `
+            <div class="lippu">
+                <h3>Lipun tiedot</h3>
+
+                <p><b>ID:</b> ${lippu.id}</p>
+                <p><b>Koodi:</b> ${lippu.koodi}</p>
+                <p><b>Kuvaus:</b> ${lippu.kuvaus}</p>
+                <p><b>Hinta:</b> ${lippu.hinta} €</p>
+
+                <p>
+                    <b>Tila:</b>
+                    <span class="${lippu.kaytetty ? 'kaytetty' : 'kayttamaton'}">
+                        ${lippu.kaytetty ? 'Käytetty' : 'Käyttämätön'}
+                    </span>
+                </p>
+
+                <button onclick="merkitseKaytetyksi()">
+                    Merkitse käytetyksi
+                </button>
+            </div>
+        `;
+
+            } catch (error) {
+                document.getElementById("tulos").innerHTML =
+                    `<p style="color:red">${error.message}</p>`;
+            }
+        }
+
+        async function merkitseKaytetyksi() {
+
+            if (nykyinenLippuId === null) {
+                return;
+            }
+
+            try {
+
+                const response = await fetch(
+                    `http://localhost:8080/ticket/${nykyinenLippuId}`,
+                    {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            kaytetty: true
+                        })
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error("Päivitys epäonnistui");
+                }
+
+                alert("Lippu merkitty käytetyksi");
+
+                haeLippu();
+
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+    </script>
+
+</body>
+
+</html>

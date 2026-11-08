@@ -394,6 +394,7 @@ Tietokannan osoite jätetään tarkoituksella pois, jolloin Spring Boot luo joka
 | `TapahtumaHttpTest` | Tapahtumien onnistuneet toiminnot HTTP:n yli (luonti, päivitys 200, poisto 204) sekä oikeudet: lukeminen julkista, kirjautumaton 401, myyjä 403 |
 | `AuthControllerTest` | Rekisteröinti, kirjautuminen, roolit, asiakkaan omat myynnit ja roolin korotuksen esto |
 | `MyyntitapahtumaControllerTest` | Myynnin luonnin validointi ja virhetilanteet |
+| `LippuControllerTest` | Lipun lukeminen virhetilanteet |
 | `MyyntitapahtumaDtoTest` | Myynnin luonti-DTO:iden kentät, konstruktorit ja setterit |
 | `BootstrapAdminTest` | Bootstrap-ylläpitäjän luonti, BCrypt-tiiviste, kirjautuminen ja uudelleenkäynnistyksen simulointi ilman duplikaattia |
 
