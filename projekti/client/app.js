@@ -1,4 +1,4 @@
-const API = "https://projekti-6k8i.onrender.com";
+const API = "/api";
 const state = {
   events: [],
   event: null,
