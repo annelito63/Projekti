@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="fi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TicketGuru – liput</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="#">TicketGuru</a>
+      <button id="account-button" type="button">Kirjaudu</button>
+    </header>
+
+    <main>
+      <h1>Tapahtumat</h1>
+      <p id="event-count" aria-live="polite"></p>
+      <div class="shop-layout">
+        <section aria-label="Tapahtumalista">
+          <label>
+            <span class="sr-only">Hae tapahtumia</span>
+            <input id="event-search" type="search" placeholder="Hae tapahtumia">
+          </label>
+          <div id="events-status" class="status-message" role="status" aria-live="polite">Haetaan tapahtumia…</div>
+          <div id="event-list" class="event-grid"></div>
+        </section>
+
+        <aside class="order-panel" aria-labelledby="order-title">
+          <h2 id="order-title">Ostoskori</h2>
+          <div id="selected-event" class="selected-event is-empty"></div>
+          <div id="ticket-types" class="ticket-types"></div>
+          <div id="order-empty" class="order-empty">
+            <p>Valitse tapahtuma.</p>
+          </div>
+          <div class="order-total">
+            <span>Yhteensä</span>
+            <strong id="order-total">0,00 €</strong>
+          </div>
+          <button id="checkout-button" type="button" disabled>Tallenna tilaus</button>
+          <div id="purchase-status" class="purchase-status" role="status" aria-live="polite"></div>
+        </aside>
+      </div>
+    </main>
+
+    <dialog id="auth-dialog" aria-labelledby="auth-title">
+      <form id="auth-form">
+        <button class="dialog-close" id="close-auth" type="button" aria-label="Sulje">×</button>
+        <h2 id="auth-title">Kirjaudu</h2>
+        <div class="auth-tabs" role="tablist" aria-label="Kirjautuminen">
+          <button class="auth-tab is-active" id="login-tab" type="button" role="tab" aria-selected="true">Kirjaudu</button>
+          <button class="auth-tab" id="register-tab" type="button" role="tab" aria-selected="false">Luo tili</button>
+        </div>
+        <label class="form-field" id="name-field" hidden>
+          Nimi
+          <input id="auth-name" name="nimi" type="text" autocomplete="name" maxlength="120">
+        </label>
+        <label class="form-field">
+          Sähköposti
+          <input id="auth-email" name="sahkoposti" type="email" autocomplete="email" required maxlength="254">
+        </label>
+        <label class="form-field">
+          Salasana
+          <input id="auth-password" name="salasana" type="password" autocomplete="current-password" required minlength="8" maxlength="72">
+        </label>
+        <p id="auth-error" class="form-error" role="alert"></p>
+        <button id="auth-submit" type="submit">Kirjaudu sisään</button>
+      </form>
+    </dialog>
+
+    <dialog id="success-dialog" aria-labelledby="success-title">
+      <button class="dialog-close" id="close-success" type="button" aria-label="Sulje">×</button>
+      <h2 id="success-title">Tilaus tallennettu</h2>
+      <p id="success-message"></p>
+      <button id="success-done" type="button">Sulje</button>
+    </dialog>
+  </body>
+</html>

@@ -1,0 +1,240 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 16px;
+  color: #222;
+  font: 16px Arial, sans-serif;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-bottom: 1px solid #ccc;
+}
+
+.brand {
+  color: inherit;
+  font-size: 20px;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+button,
+input {
+  padding: 7px;
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+main {
+  padding: 20px 0;
+}
+
+.shop-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 20px;
+}
+
+.shop-layout section > label,
+.shop-layout section > label input {
+  width: 100%;
+}
+
+.event-grid,
+.ticket-types {
+  display: grid;
+  gap: 10px;
+}
+
+.event-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.event-card,
+.order-panel,
+.ticket-type-row {
+  padding: 12px;
+  border: 1px solid #ccc;
+}
+
+.event-card.is-selected {
+  border-color: #222;
+}
+
+.event-card-top,
+.event-card-bottom,
+.ticket-type-row,
+.order-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.event-card h3 {
+  margin: 8px 0;
+}
+
+.event-card p,
+.ticket-type-name,
+.ticket-type-description {
+  margin: 4px 0;
+}
+
+.event-date-short,
+.event-location,
+.event-venue,
+.event-description,
+.ticket-type-description {
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.event-card-bottom {
+  margin-top: 10px;
+}
+
+.order-panel {
+  align-self: start;
+}
+
+.selected-event {
+  padding: 8px 0;
+  border-bottom: 1px solid #ccc;
+}
+
+.selected-event strong,
+.selected-event div span {
+  display: block;
+}
+
+.selected-event div span {
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.ticket-types {
+  margin-top: 10px;
+}
+
+.ticket-type-row {
+  align-items: flex-start;
+}
+
+.ticket-type-price {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.order-total {
+  margin: 14px 0;
+  padding-top: 10px;
+  border-top: 1px solid #ccc;
+}
+
+#checkout-button {
+  width: 100%;
+}
+
+.order-empty,
+.status-message,
+.purchase-status {
+  margin: 10px 0;
+}
+
+.order-empty[hidden],
+#name-field[hidden] {
+  display: none;
+}
+
+.status-message.is-error,
+.purchase-status.is-error,
+.form-error {
+  color: #a00000;
+}
+
+.retry-button {
+  margin-left: 8px;
+}
+
+.event-empty {
+  grid-column: 1 / -1;
+}
+
+dialog {
+  position: relative;
+  width: min(420px, calc(100vw - 32px));
+  padding: 20px;
+}
+
+.dialog-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.auth-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.auth-tab.is-active {
+  font-weight: bold;
+}
+
+.form-field {
+  display: block;
+  margin: 12px 0;
+}
+
+.form-field input {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+@media (max-width: 700px) {
+  .shop-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .order-panel {
+    grid-row: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .event-grid {
+    grid-template-columns: 1fr;
+  }
+}
