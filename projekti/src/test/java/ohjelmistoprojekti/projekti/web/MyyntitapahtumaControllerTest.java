@@ -1,8 +1,10 @@
 package ohjelmistoprojekti.projekti.web;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 
@@ -20,6 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import ohjelmistoprojekti.projekti.model.Kayttaja;
 import ohjelmistoprojekti.projekti.model.KayttajaRepository;
+import ohjelmistoprojekti.projekti.model.LippuRepository;
+import ohjelmistoprojekti.projekti.model.Lipputyyppi;
+import ohjelmistoprojekti.projekti.model.LipputyyppiRepository;
 import ohjelmistoprojekti.projekti.model.Rooli;
 import ohjelmistoprojekti.projekti.model.Tapahtuma;
 import ohjelmistoprojekti.projekti.model.TapahtumaRepository;
@@ -39,10 +44,17 @@ class MyyntitapahtumaControllerTest {
     private KayttajaRepository kayttajaRepository;
 
     @Autowired
+    private LipputyyppiRepository lipputyyppiRepository;
+
+    @Autowired
+    private LippuRepository lippuRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     private Long tapahtumaId;
     private Long kayttajaId;
+    private Long lipputyyppiId;
 
     @BeforeEach
     void luoMyyntiinLiittyvatResurssit() {
@@ -52,7 +64,14 @@ class MyyntitapahtumaControllerTest {
 		tapahtuma.setAika("2026-10-10T18:00");
 		tapahtuma.setKaupunki("Oulu");
 		tapahtuma.setPaikka("Areena");
+		tapahtuma.setMaara(10);
 		tapahtumaId = tapahtumaRepository.save(tapahtuma).getTapahtumaid();
+
+        Lipputyyppi lipputyyppi = new Lipputyyppi();
+        lipputyyppi.setTapahtuma(tapahtumaRepository.findById(tapahtumaId).orElseThrow());
+        lipputyyppi.setNimi("Peruslippu");
+        lipputyyppi.setHinta(20.0);
+        lipputyyppiId = lipputyyppiRepository.save(lipputyyppi).getLipputyyppiId();
 
 		Kayttaja kayttaja = new Kayttaja();
 		kayttaja.setNimi("Testimyyja");
@@ -168,6 +187,57 @@ class MyyntitapahtumaControllerTest {
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(requestWithRow("{\"lipputyyppiId\":" + Long.MAX_VALUE + ",\"maara\":1}")))
 			.andExpect(status().isNotFound());
+    }
+
+    @Test
+    void myyntiLuoYksilollisetLiputJaPalauttaaNiidenKoodit() throws Exception {
+        performAuthenticated(post("/myynnit")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestWithRow("{\"lipputyyppiId\":" + lipputyyppiId + ",\"maara\":2}")))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.liput.length()").value(2))
+                .andExpect(jsonPath("$.liput[0].koodi").isString())
+                .andExpect(jsonPath("$.liput[1].koodi").isString())
+                .andExpect(jsonPath("$.kokonaissumma").value(40.0));
+
+        assertEquals(2, lippuRepository.countByTapahtumaid(
+                tapahtumaRepository.findById(tapahtumaId).orElseThrow()));
+    }
+
+    @Test
+    void myyntiEiVoiYlittaaTapahtumanLippukapasiteettia() throws Exception {
+        Tapahtuma tapahtuma = tapahtumaRepository.findById(tapahtumaId).orElseThrow();
+        tapahtuma.setMaara(1);
+        tapahtumaRepository.save(tapahtuma);
+
+        performAuthenticated(post("/myynnit")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestWithRow("{\"lipputyyppiId\":" + lipputyyppiId + ",\"maara\":2}")))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void myyntiEiVoiKayttaaToisenTapahtumanLipputyyppia() throws Exception {
+        Tapahtuma toinenTapahtuma = new Tapahtuma();
+        toinenTapahtuma.setNimi("Toinen tapahtuma");
+        toinenTapahtuma.setTyyppi("Konsertti");
+        toinenTapahtuma.setAika("2026-12-11T18:00");
+        toinenTapahtuma.setKaupunki("Oulu");
+        toinenTapahtuma.setPaikka("Toinen areena");
+        toinenTapahtuma.setMaara(10);
+        toinenTapahtuma = tapahtumaRepository.save(toinenTapahtuma);
+
+        Lipputyyppi toinenTyyppi = new Lipputyyppi();
+        toinenTyyppi.setTapahtuma(toinenTapahtuma);
+        toinenTyyppi.setNimi("Toisen tapahtuman lippu");
+        toinenTyyppi.setHinta(15.0);
+        toinenTyyppi = lipputyyppiRepository.save(toinenTyyppi);
+
+        performAuthenticated(post("/myynnit")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestWithRow("{\"lipputyyppiId\":" + toinenTyyppi.getLipputyyppiId()
+                        + ",\"maara\":1}")))
+                .andExpect(status().isBadRequest());
     }
 
     private String requestWithRow(String row) {

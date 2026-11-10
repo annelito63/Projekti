@@ -82,6 +82,7 @@ Vastaa luokkaa `ohjelmistoprojekti.projekti.model.Myyntitapahtuma`.
 | `myyntiaika` | LocalDateTime | kyllä | Palvelin asettaa ajan myynnin luonnissa. |
 | `kokonaissumma` | double | kyllä | Palvelin laskee summan lipputyyppien hinnoista ja määristä. |
 | `myyntirivit` | Myyntirivi[] | ei | Myyntiin liittyvät rivit; luontipyynnössä annetaan `rivit`. |
+| `liput` | Lippu[] | ei | Myynnissä luodut yksilölliset liput ja niiden koodit. |
  
  
 ### Esimerkki JSON-esityksestä
@@ -93,7 +94,16 @@ Vastaa luokkaa `ohjelmistoprojekti.projekti.model.Myyntitapahtuma`.
   "kayttaja": 1,
   "myyntiaika": "2026-06-12T19:00:00",
   "kokonaissumma": 50.95,
-  "myyntirivit": []
+  "myyntirivit": [],
+  "liput": [
+    {
+      "id": 1,
+      "koodi": "9F6A2B0D1C4E4F248E6B9A6C3D0F1122",
+      "kuvaus": "Aikuinen",
+      "hinta": 50.95,
+      "kaytetty": false
+    }
+  ]
 }
 ```
  
@@ -247,8 +257,10 @@ curl -u "asiakas@example.fi:salasana" http://localhost:8080/myynnit/1
  
 ### POST /myynnit
  
-Luo uuden tapahtuman. Palvelin generoi `myyntiId`-arvon; pyynnössä
-mahdollisesti annettu id ohitetaan.
+Luo myyntitapahtuman ja jokaiselle myyntirivin lipulle yksilöllisen
+lippukoodin. Palvelin tarkistaa tapahtuman kapasiteetin ja sen, että jokainen
+lipputyyppi kuuluu pyynnön tapahtumaan. Kaikki tietueet tallennetaan samassa
+transaktiossa. Palvelin generoi `myyntiId`- ja lippujen tunnisteet.
  
 **Metodi ja polku**
  
@@ -313,7 +325,8 @@ Palauttaa luodun myyntitapahtuman generoidulla tunnisteella.
 ```
 
 Esimerkki näyttää vastauksen rakenteen lyhennettynä. Tapahtuma- ja
-myyntiriviobjektit sisältävät lisäksi omat mallinsa kentät.
+myyntiriviobjektit sisältävät lisäksi omat mallinsa kentät. `liput`-listassa
+palautetaan jokaiselle ostetulle lipulle oma koodi.
  
 **Vastaus: 400 Bad Request**
  
@@ -323,6 +336,10 @@ rivin lipputyyppitunniste puuttuu tai rivin määrä ei ole positiivinen.
 **Vastaus: 404 Not Found**
 
 Pyynnössä viitattua tapahtumaa, käyttäjää tai lipputyyppiä ei löydy.
+
+**Vastaus: 409 Conflict**
+
+Tapahtuman lippukapasiteetti ei riitä pyydettyyn määrään.
  
 **Esimerkkikutsu**
  

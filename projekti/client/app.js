@@ -5,6 +5,7 @@ const state = {
   ticketTypes: [],
   quantities: {},
   credentials: null,
+  role: null,
   authMode: "login"
 };
 
@@ -58,11 +59,26 @@ async function request(path, options = {}) {
   }
 
   if (!response.ok) {
+    const body = await response.text();
+    let detail = body;
+    try {
+      const error = JSON.parse(body);
+      detail = error.message || error.detail || error.virhe || body;
+    } catch {
+      detail = body;
+    }
     if (response.status === 401) throw new Error("Sähköposti tai salasana on väärä.");
-    if (response.status === 409) throw new Error("Sähköpostiosoite on jo käytössä. Kirjaudu sisään.");
+    if (response.status === 409) {
+      throw new Error(path === "/auth/register"
+        ? "Sähköpostiosoite on jo käytössä. Kirjaudu sisään."
+        : detail || "Tapahtuman lippukapasiteetti ei riitä tilaukseen.");
+    }
     if (response.status === 503) throw new Error("Palvelu ei vastaa juuri nyt. Yritä uudelleen.");
     if (response.status === 404) throw new Error("Tietoa ei löytynyt. Päivitä sivu ja yritä uudelleen.");
-    throw new Error(`Pyyntö epäonnistui (HTTP ${response.status}).`);
+    if (response.status >= 500 && path.endsWith("/lipputyypit")) {
+      throw new Error("Lipputyyppien haku epäonnistui palvelimella. Päivitä backend-palvelu.");
+    }
+    throw new Error(detail || `Pyyntö epäonnistui (HTTP ${response.status}).`);
   }
 
   if (response.status === 204) return null;
@@ -137,6 +153,7 @@ async function loadEvents() {
 function renderEvent() {
   const selected = $("#selected-event");
   selected.replaceChildren();
+  $("#ticket-type-form").hidden = state.role !== "YLLAPITAJA" || !state.event;
   if (!state.event) {
     selected.textContent = "Valitse tapahtuma.";
     return;
@@ -259,8 +276,14 @@ async function authenticate(email, password) {
   state.credentials = { email, password };
   try {
     const user = await request("/auth/me", { auth: true });
-    if (user.rooli !== "VERKKOKAUPAN_ASIAKAS") throw new Error("Kirjaudu asiakastilillä.");
-    $("#account-button").textContent = "Kirjaudu ulos";
+    if (!["VERKKOKAUPAN_ASIAKAS", "YLLAPITAJA"].includes(user.rooli)) {
+      throw new Error("Kirjaudu asiakastilillä tai ylläpitäjänä.");
+    }
+    state.role = user.rooli;
+    $("#admin-panel").hidden = state.role !== "YLLAPITAJA";
+    checkoutButton.hidden = state.role !== "VERKKOKAUPAN_ASIAKAS";
+    $("#account-button").textContent = state.role === "YLLAPITAJA" ? "Kirjaudu ulos (ylläpito)" : "Kirjaudu ulos";
+    renderEvent();
   } catch (error) {
     state.credentials = previous;
     throw error;
@@ -294,7 +317,7 @@ async function submitAuth(event) {
 }
 
 async function checkout() {
-  if (!state.credentials) {
+  if (!state.credentials || state.role !== "VERKKOKAUPAN_ASIAKAS") {
     $("#auth-dialog").showModal();
     return;
   }
@@ -314,7 +337,8 @@ async function checkout() {
       const type = state.ticketTypes.find((item) => typeId(item) === line.lipputyyppiId);
       return sum + Number(type.hinta) * line.maara;
     }, 0);
-    $("#success-message").textContent = `${state.event.nimi}: ${price(total)}. Maksua ei käsitelty.`;
+    const codes = (sale?.liput || []).map((ticket) => ticket.koodi).filter(Boolean);
+    $("#success-message").textContent = `${state.event.nimi}: ${price(total)}. Liput: ${codes.join(", ") || "ei palautettuja lippukoodeja"}. Maksua ei käsitelty.`;
     $("#success-dialog").showModal();
     for (const id of Object.keys(state.quantities)) state.quantities[id] = 0;
     renderTicketTypes();
@@ -327,6 +351,65 @@ async function checkout() {
   }
 }
 
+async function createEvent(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const data = new FormData(form);
+  const status = $("#admin-status");
+  status.textContent = "";
+  try {
+    const created = await request("/tapahtumat", {
+      method: "POST",
+      auth: true,
+      body: {
+        nimi: data.get("nimi").trim(),
+        tyyppi: data.get("tyyppi").trim(),
+        aika: data.get("aika"),
+        kaupunki: data.get("kaupunki").trim(),
+        paikka: data.get("paikka").trim(),
+        kuvaus: data.get("kuvaus").trim(),
+        maara: Number(data.get("maara"))
+      }
+    });
+    form.reset();
+    await loadEvents();
+    const saved = state.events.find((item) => String(eventId(item)) === String(eventId(created)));
+    if (saved) await selectEvent(saved);
+    status.textContent = "Tapahtuma luotu.";
+  } catch (error) {
+    status.textContent = error.message;
+  }
+}
+
+async function createTicketType(event) {
+  event.preventDefault();
+  if (!state.event) return;
+  const form = event.currentTarget;
+  const data = new FormData(form);
+  const button = form.querySelector("button[type=submit]");
+  button.disabled = true;
+  try {
+    const type = await request(`/tapahtumat/${encodeURIComponent(eventId(state.event))}/lipputyypit`, {
+      method: "POST",
+      auth: true,
+      body: {
+        nimi: data.get("nimi").trim(),
+        kuvaus: data.get("kuvaus").trim(),
+        hinta: Number(data.get("hinta"))
+      }
+    });
+    form.reset();
+    state.ticketTypes.push(type);
+    state.quantities[typeId(type)] = 0;
+    renderTicketTypes();
+  } catch (error) {
+    purchaseStatus.textContent = error.message;
+    purchaseStatus.classList.add("is-error");
+  } finally {
+    button.disabled = false;
+  }
+}
+
 eventSearch.addEventListener("input", renderEvents);
 $("#account-button").addEventListener("click", () => {
   if (!state.credentials) {
@@ -335,10 +418,16 @@ $("#account-button").addEventListener("click", () => {
     return;
   }
   state.credentials = null;
+  state.role = null;
+  $("#admin-panel").hidden = true;
+  checkoutButton.hidden = false;
   $("#account-button").textContent = "Kirjaudu";
+  renderEvent();
 });
 checkoutButton.addEventListener("click", checkout);
 $("#auth-form").addEventListener("submit", submitAuth);
+$("#event-form").addEventListener("submit", createEvent);
+$("#ticket-type-form").addEventListener("submit", createTicketType);
 $("#login-tab").addEventListener("click", () => setAuthMode("login"));
 $("#register-tab").addEventListener("click", () => setAuthMode("register"));
 $("#close-auth").addEventListener("click", () => $("#auth-dialog").close());

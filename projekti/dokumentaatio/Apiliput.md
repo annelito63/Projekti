@@ -1,7 +1,8 @@
 # Lippujen hallinta – REST API -dokumentaatio
 
-Tämä dokumentti kuvaa toteutetut lippujen haku- ja käyttötilan päivitysrajapinnat.
-Lipun luonti, muokkaus ja poisto eivät ole vielä toteutettuja rajapintoja.
+Tämä dokumentti kuvaa lippujen hakemisen ja käyttötilan päivityksen. Yksittäiset
+liput luodaan automaattisesti myynnin yhteydessä `POST /myynnit` -rajapinnassa;
+erillistä lippujen luontireittiä ei ole.
 
 - **Sovellus:** `ohjelmistoprojekti.projekti` (Spring Boot)
 - **Kontrolleri:** `ohjelmistoprojekti.projekti.web.LippuController`
@@ -13,7 +14,7 @@ Lipun luonti, muokkaus ja poisto eivät ole vielä toteutettuja rajapintoja.
 |---|---|
 | Lipun haku lippukoodilla | Toteutettu |
 | Lipun merkitseminen käytetyksi (PATCH) | Toteutettu |
-| Lippujen luonti | Suunniteltu |
+| Lippujen luonti myynnin yhteydessä | Toteutettu |
 | Kaikkien lippujen / yksittäisen lipun haku id:llä | Suunniteltu |
 | Lipun poisto | Suunniteltu |
 
@@ -24,6 +25,8 @@ Lipun luonti, muokkaus ja poisto eivät ole vielä toteutettuja rajapintoja.
 - [Base-URL](#base-url)
 - [Yleiset periaatteet](#yleiset-periaatteet)
 - [Tietomalli: Lippu](#tietomalli-lippu)
+- [Lipun luonti myynnin yhteydessä](#lipun-luonti-myynnin-yhteydessä)
+- [Lipputyypin luonti](#lipputyypin-luonti)
 - [Endpointit](#endpointit)
   - [GET /ticket/ticket](#get-ticketticket)
   - [PATCH /ticket/{id}](#patch-ticketid)
@@ -101,6 +104,37 @@ palautetaan `LippuDto`-muodossa.
   "kaytetty": false
 }
 ```
+
+---
+
+## Lipun luonti myynnin yhteydessä
+
+Kun `POST /myynnit` onnistuu, palvelin luo jokaiselle myyntirivin lipulle oman
+`Lippu`-tietueen. Lippuun tallennetaan tapahtuma, lipputyyppi, myynti,
+yksikköhinta sekä yksilöllinen koodi. Luodut liput ja koodit palautetaan
+myyntivastauksen `liput`-kentässä. Myynti epäonnistuu, jos lipputyyppi kuuluu
+toiseen tapahtumaan tai tapahtuman kapasiteetti ylittyisi.
+
+## Lipputyypin luonti
+
+Ylläpitäjä luo tapahtumalle lipputyypin seuraavalla reitillä:
+
+```
+POST /tapahtumat/{tapahtumaId}/lipputyypit
+```
+
+Pyyntö käyttää HTTP Basic -autentikointia ja vaatii `YLLAPITAJA`-roolin.
+
+```json
+{
+  "nimi": "Peruslippu",
+  "kuvaus": "Normaalihintainen lippu",
+  "hinta": 25.0
+}
+```
+
+Onnistunut pyyntö palauttaa `201 Created`. Nimi on pakollinen ja hinnan on
+oltava vähintään nolla. Tapahtuma on luotava ensin `/tapahtumat`-rajapinnassa.
 
 ---
 

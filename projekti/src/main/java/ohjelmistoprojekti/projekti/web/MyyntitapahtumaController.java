@@ -3,6 +3,8 @@ package ohjelmistoprojekti.projekti.web;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
@@ -16,9 +18,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.transaction.annotation.Transactional;
 
 import ohjelmistoprojekti.projekti.model.Kayttaja;
 import ohjelmistoprojekti.projekti.model.KayttajaRepository;
+import ohjelmistoprojekti.projekti.model.Lippu;
+import ohjelmistoprojekti.projekti.model.LippuRepository;
 import ohjelmistoprojekti.projekti.model.Lipputyyppi;
 import ohjelmistoprojekti.projekti.model.LipputyyppiRepository;
 import ohjelmistoprojekti.projekti.model.Myyntirivi;
@@ -38,15 +43,18 @@ public class MyyntitapahtumaController {
     private final TapahtumaRepository tapahtumaRepository;
     private final KayttajaRepository kayttajaRepository;
     private final LipputyyppiRepository lipputyyppiRepository;
+    private final LippuRepository lippuRepository;
 
     public MyyntitapahtumaController(MyyntitapahtumaRepository myyntitapahtumaRepository,
             TapahtumaRepository tapahtumaRepository,
             KayttajaRepository kayttajaRepository,
-            LipputyyppiRepository lipputyyppiRepository) {
+            LipputyyppiRepository lipputyyppiRepository,
+            LippuRepository lippuRepository) {
         this.myyntitapahtumaRepository = myyntitapahtumaRepository;
         this.tapahtumaRepository = tapahtumaRepository;
         this.kayttajaRepository = kayttajaRepository;
         this.lipputyyppiRepository = lipputyyppiRepository;
+        this.lippuRepository = lippuRepository;
     }
 
     @GetMapping("/myynnit")
@@ -74,6 +82,7 @@ public class MyyntitapahtumaController {
 
     @PostMapping("/myynnit")
     @PreAuthorize("hasAnyRole('YLLAPITAJA', 'MYYJA', 'VERKKOKAUPAN_ASIAKAS')")
+    @Transactional
     public ResponseEntity<?> addMyynti(
             @Valid @RequestBody MyyntitapahtumaLuontiDto pyynto,
             Authentication authentication) {
@@ -89,7 +98,7 @@ public class MyyntitapahtumaController {
             return ResponseEntity.badRequest().body("Myynnissä on oltava vähintään yksi rivi");
         }
 
-        Optional<Tapahtuma> tapahtumaOpt = tapahtumaRepository.findById(pyynto.getTapahtumaId());
+        Optional<Tapahtuma> tapahtumaOpt = tapahtumaRepository.findByIdForUpdate(pyynto.getTapahtumaId());
         if (tapahtumaOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Tapahtumaa id:llä " + pyynto.getTapahtumaId() + " ei löytynyt");
@@ -107,17 +116,38 @@ public class MyyntitapahtumaController {
             myynninKayttaja = kayttajaOpt.get();
         }
 
+        List<Lipputyyppi> lipputyypit = new ArrayList<>();
+        long pyydettyLippumaara = 0;
         for (MyyntiriviLuontiDto rivi : pyynto.getRivit()) {
+            if (rivi == null) {
+                return ResponseEntity.badRequest().body("Myyntirivi ei voi olla tyhjä");
+            }
             if (rivi.getLipputyyppiId() == null) {
                 return ResponseEntity.badRequest().body("Jokaisella rivillä on oltava lipputyyppiId");
             }
             if (rivi.getMaara() <= 0) {
                 return ResponseEntity.badRequest().body("Rivin määrän on oltava suurempi kuin 0");
             }
-            if (lipputyyppiRepository.findById(rivi.getLipputyyppiId()).isEmpty()) {
+            Optional<Lipputyyppi> lipputyyppiOpt = lipputyyppiRepository.findById(rivi.getLipputyyppiId());
+            if (lipputyyppiOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body("Lipputyyppiä id:llä " + rivi.getLipputyyppiId() + " ei löytynyt");
             }
+            Lipputyyppi lipputyyppi = lipputyyppiOpt.get();
+            if (lipputyyppi.getTapahtuma() == null
+                    || !lipputyyppi.getTapahtuma().getTapahtumaid().equals(tapahtumaOpt.get().getTapahtumaid())) {
+                return ResponseEntity.badRequest()
+                        .body("Lipputyypin on kuuluttava myynnin tapahtumaan");
+            }
+            lipputyypit.add(lipputyyppi);
+            pyydettyLippumaara += rivi.getMaara();
+        }
+
+        Integer kapasiteetti = tapahtumaOpt.get().getMaara();
+        if (kapasiteetti == null
+                || lippuRepository.countByTapahtumaid(tapahtumaOpt.get()) + pyydettyLippumaara > kapasiteetti) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Tapahtuman lippukapasiteetti ei riitä valittuun määrään");
         }
 
         Myyntitapahtuma myynti = new Myyntitapahtuma();
@@ -126,10 +156,12 @@ public class MyyntitapahtumaController {
         myynti.setMyyntiaika(LocalDateTime.now());
 
         List<Myyntirivi> rivit = new ArrayList<>();
+        List<Lippu> liput = new ArrayList<>();
         double kokonaissumma = 0.0;
 
-        for (MyyntiriviLuontiDto riviDto : pyynto.getRivit()) {
-            Lipputyyppi lipputyyppi = lipputyyppiRepository.findById(riviDto.getLipputyyppiId()).get();
+        for (int i = 0; i < pyynto.getRivit().size(); i++) {
+            MyyntiriviLuontiDto riviDto = pyynto.getRivit().get(i);
+            Lipputyyppi lipputyyppi = lipputyypit.get(i);
 
             double yksikkohinta = lipputyyppi.getHinta();
             double rivisumma = yksikkohinta * riviDto.getMaara();
@@ -143,14 +175,34 @@ public class MyyntitapahtumaController {
             rivi.setRivisumma(rivisumma);
 
             rivit.add(rivi);
+
+            for (int ticketIndex = 0; ticketIndex < riviDto.getMaara(); ticketIndex++) {
+                Lippu lippu = new Lippu();
+                lippu.setTapahtumaid(tapahtumaOpt.get());
+                lippu.setLipputyyppi(lipputyyppi);
+                lippu.setMyynti(myynti);
+                lippu.setKoodi(luoYksilollinenKoodi());
+                lippu.setKuvaus(lipputyyppi.getNimi());
+                lippu.setHinta(yksikkohinta);
+                liput.add(lippu);
+            }
         }
 
         myynti.setMyyntirivit(rivit);
+        myynti.setLiput(liput);
         myynti.setKokonaissumma(kokonaissumma);
 
         Myyntitapahtuma tallennettu = myyntitapahtumaRepository.save(myynti);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(tallennettu);
+    }
+
+    private String luoYksilollinenKoodi() {
+        String koodi;
+        do {
+            koodi = UUID.randomUUID().toString().replace("-", "").toUpperCase(Locale.ROOT);
+        } while (lippuRepository.existsByKoodi(koodi));
+        return koodi;
     }
 
     private Kayttaja currentUser(Authentication authentication) {

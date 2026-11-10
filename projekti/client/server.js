@@ -3,7 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const root = __dirname;
-const apiOrigin = "https://projekti-6k8i.onrender.com";
+const apiOrigin = process.env.API_ORIGIN || "https://lippupalvelu-uons.onrender.com";
 const port = Number(process.env.PORT) || 4173;
 const host = process.env.PORT ? "0.0.0.0" : "127.0.0.1";
 const contentTypes = {
@@ -18,7 +18,11 @@ function replyError(response, status, message) {
 }
 
 async function proxyApi(request, response) {
-  const target = new URL(request.url.slice(4), apiOrigin);
+  const target = new URL(request.url.slice(4), `${apiOrigin}/`);
+  if (target.origin !== new URL(apiOrigin).origin) {
+    replyError(response, 400, "Virheellinen API-polku.");
+    return;
+  }
   const headers = {};
   for (const name of ["accept", "authorization", "content-type"]) {
     if (request.headers[name]) headers[name] = request.headers[name];
@@ -32,7 +36,10 @@ async function proxyApi(request, response) {
   }
 
   try {
-    const upstream = await fetch(target, options);
+    const upstream = await fetch(target, {
+      ...options,
+      signal: AbortSignal.timeout(60000)
+    });
     const responseHeaders = {};
     for (const name of ["content-type", "cache-control"]) {
       const value = upstream.headers.get(name);
@@ -84,5 +91,5 @@ http.createServer((request, response) => {
     response.end(request.method === "HEAD" ? undefined : content);
   });
 }).listen(port, host, () => {
-  console.log(`TicketGuru client: http://${host}:${port}`);
+  console.log(`Lippupalvelu client: http://${host}:${port}`);
 });

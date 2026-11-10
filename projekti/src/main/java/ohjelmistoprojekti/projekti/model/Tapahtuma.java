@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 
 
 @Entity
@@ -39,6 +40,7 @@ public class Tapahtuma {
 
 
     @NotNull(message = "Lippujen määrä ei voi olla tyhjä")
+    @PositiveOrZero(message = "Lippujen määrän on oltava vähintään nolla")
     private Integer maara; // oli: private int maara;
 
 

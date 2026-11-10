@@ -215,6 +215,32 @@ dialog {
   margin-top: 4px;
 }
 
+#admin-panel {
+  margin: 20px 0;
+  padding: 12px;
+  border: 1px solid #ccc;
+}
+
+.management-form {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.management-form label {
+  display: grid;
+  gap: 4px;
+}
+
+.management-form input {
+  width: 100%;
+}
+
+.management-form[hidden],
+#admin-panel[hidden] {
+  display: none;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;

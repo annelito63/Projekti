@@ -3,18 +3,32 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>TicketGuru – liput</title>
+    <title>Lippupalvelu – liput</title>
     <link rel="stylesheet" href="./styles.css">
     <script src="./app.js" defer></script>
   </head>
   <body>
     <header>
-      <a class="brand" href="#">TicketGuru</a>
+      <a class="brand" href="#">Lippupalvelu</a>
       <button id="account-button" type="button">Kirjaudu</button>
     </header>
 
     <main>
       <h1>Tapahtumat</h1>
+      <section id="admin-panel" hidden>
+        <h2>Luo tapahtuma</h2>
+        <form id="event-form" class="management-form">
+          <label>Nimi <input name="nimi" required></label>
+          <label>Tyyppi <input name="tyyppi" required></label>
+          <label>Aika <input name="aika" type="datetime-local" required></label>
+          <label>Kaupunki <input name="kaupunki" required></label>
+          <label>Paikka <input name="paikka" required></label>
+          <label>Kuvaus <input name="kuvaus"></label>
+          <label>Lippujen määrä <input name="maara" type="number" min="1" step="1" required></label>
+          <button type="submit">Luo tapahtuma</button>
+        </form>
+        <p id="admin-status" role="status"></p>
+      </section>
       <p id="event-count" aria-live="polite"></p>
       <div class="shop-layout">
         <section aria-label="Tapahtumalista">
@@ -29,6 +43,13 @@
         <aside class="order-panel" aria-labelledby="order-title">
           <h2 id="order-title">Ostoskori</h2>
           <div id="selected-event" class="selected-event is-empty"></div>
+          <form id="ticket-type-form" class="management-form" hidden>
+            <h3>Lisää lipputyyppi</h3>
+            <label>Nimi <input name="nimi" required></label>
+            <label>Kuvaus <input name="kuvaus"></label>
+            <label>Hinta (€) <input name="hinta" type="number" min="0" step="0.01" required></label>
+            <button type="submit">Lisää lipputyyppi</button>
+          </form>
           <div id="ticket-types" class="ticket-types"></div>
           <div id="order-empty" class="order-empty">
             <p>Valitse tapahtuma.</p>

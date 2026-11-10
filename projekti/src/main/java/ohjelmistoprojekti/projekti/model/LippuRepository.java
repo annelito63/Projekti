@@ -10,4 +10,8 @@ public interface LippuRepository extends CrudRepository<Lippu, Long> {
 
     List<Lippu> findByHinta(double hinta);
 
+    long countByTapahtumaid(Tapahtuma tapahtuma);
+
+    boolean existsByKoodi(String koodi);
+
 }

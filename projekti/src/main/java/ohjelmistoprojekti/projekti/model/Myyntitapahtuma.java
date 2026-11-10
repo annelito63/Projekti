@@ -44,6 +44,10 @@ public class Myyntitapahtuma {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "myynti")
     private List<Myyntirivi> myyntirivit;
 
+    @JsonIgnoreProperties("myynti")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "myynti")
+    private List<Lippu> liput;
+
     public Myyntitapahtuma() {
     }
 
@@ -103,6 +107,14 @@ public class Myyntitapahtuma {
 
     public void setMyyntirivit(List<Myyntirivi> myyntirivit) {
         this.myyntirivit = myyntirivit;
+    }
+
+    public List<Lippu> getLiput() {
+        return liput;
+    }
+
+    public void setLiput(List<Lippu> liput) {
+        this.liput = liput;
     }
 
     @Override
