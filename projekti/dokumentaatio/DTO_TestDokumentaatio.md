@@ -31,6 +31,41 @@ Testi tulostaa terminaaliin jokaisen testin nimen, käytetyt arvot ja
 onnistumisilmoituksen. Tulostus helpottaa testin toiminnan seuraamista, mutta
 testin onnistuminen perustuu JUnitin `assert`-tarkistuksiin.
 
+## LippuControlletTest
+
+Testiluokka luo ennen jokaista testiä testilipun, jolla on seuraavat arvot:
+
+koodi: TEST123
+kuvaus: Testilippu
+hinta: 49.90
+käytetty: false
+
+Testit tarkistavat sekä controllerin HTTP-rajapinnan että tietokantaan tallentuvien muutosten oikeellisuuden.
+
+Testattavat toiminnallisuudet:
+1. Hakee lipun koodin perusteella HTTP-kutsulla.
+2. Varmistaa, että lippu löytyy repositorysta oikealla koodilla.
+3. Merkitsee lipun käytetyksi HTTP PATCH -pyynnöllä.
+4. Tarkistaa, että käytetyksi merkitseminen tallentuu tietokantaan.
+5. Tarkistaa onnistuneen päivityksen palauttaman JSON-vastauksen.
+
+Testaa virhetilanteet:
+1. lippua ei löydy (404 Not Found)
+2. koodiparametri puuttuu (400 Bad Request)
+3. tuntematon tunniste (404 Not Found)
+4. virheellinen tunnisteen tyyppi (400 Bad Request)
+5. virheellinen JSON-data (400 Bad Request)
+
+Controller tarjoaa seuraavat testatut rajapinnat:
+
+GET /ticket/ticket?koodi={koodi} hakee lipun koodin perusteella
+PATCH /ticket/{id} päivittää lipun tietoja
+
+LippuControllerTest käyttää MockMvc:tä suorien HTTP-kutsujen simulointiin ja tarkistaa:
+HTTP-statuskoodit
+JSON-vastauksen sisällön
+tietokantaan tallentuneet muutokset LippuRepositoryn kautta
+
 ## TapahtumaControllerTest
 
 `TapahtumaControllerTest.java` sijaitsee testipaketin ylemmällä tasolla.

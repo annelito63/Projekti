@@ -2,12 +2,13 @@ package ohjelmistoprojekti.projekti.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Column;
 
 @Entity
 public class Lippu {
@@ -21,6 +22,7 @@ public class Lippu {
     @JoinColumn(name = "tapahtumaid")
     private Tapahtuma tapahtumaid;
 
+    @Column(unique = true)
     private String koodi;
     private String kuvaus;
     private double hinta;
@@ -29,6 +31,11 @@ public class Lippu {
     @ManyToOne
     @JoinColumn(name = "lipputyyppi_id")
     private Lipputyyppi lipputyyppi;
+
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "myynti_id")
+    private Myyntitapahtuma myynti;
 
     private boolean kaytetty = false;
 
@@ -98,6 +105,14 @@ public class Lippu {
 
     public void setLipputyyppi(Lipputyyppi lipputyyppi) {
         this.lipputyyppi = lipputyyppi;
+    }
+
+    public Myyntitapahtuma getMyynti() {
+        return myynti;
+    }
+
+    public void setMyynti(Myyntitapahtuma myynti) {
+        this.myynti = myynti;
     }
 
     @Override
