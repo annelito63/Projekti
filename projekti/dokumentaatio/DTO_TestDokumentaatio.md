@@ -249,6 +249,37 @@ controllerille MockMvc:n avulla.
 
 ## TapahtumaHttpTest
 
+Ennen jokaista testiä luodaan testitapahtuma, jonka tietoja käytetään hakujen, päivitysten ja poistojen testaamiseen.
+
+Toisin kuin TapahtumaControllerTest, joka keskittyy pääasiassa virhetilanteisiin ja tietokantatoiminnallisuuksiin, TapahtumaHttpTest testaa sovelluksen HTTP-rajapintaa käyttäjän näkökulmasta.
+
+Testattavat toiminnallisuudet:
+1. Varmistaa, että tapahtumalistaus on julkisesti saatavilla ilman kirjautumista.
+2. Varmistaa, että yksittäisen tapahtuman tiedot voidaan hakea ilman kirjautumista.
+3. Tarkistaa, ettei kirjautumaton käyttäjä voi luoda, muokata tai poistaa tapahtumia.
+4. Tarkistaa, ettei myyjäroolin käyttäjä voi luoda, muokata tai poistaa tapahtumia.
+5. Varmistaa, että ylläpitäjä voi luoda uuden tapahtuman.
+6. Varmistaa, että ylläpitäjä voi päivittää olemassa olevan tapahtuman tiedot.
+7. Varmistaa, että ylläpitäjä voi poistaa tapahtuman.
+8. Tarkistaa, että tietokanta päivittyy oikein luonti-, muokkaus- ja poistotoimenpiteiden yhteydessä.
+
+Controller tarjoaa seuraavat testatut rajapinnat:
+
+GET /tapahtumat hakee kaikki tapahtumat
+GET /tapahtumat/{id} hakee yksittäisen tapahtuman
+POST /tapahtumat luo uuden tapahtuman
+PUT /tapahtumat/{id} päivittää tapahtuman
+DELETE /tapahtumat/{id} poistaa tapahtuman
+Käyttöoikeustestaus
+
+TapahtumaHttpTest käyttää MockMvc:tä HTTP-pyyntöjen simulointiin ja tarkistaa:
+
+HTTP-statuskoodit
+JSON-vastausten sisällön
+käyttöoikeuksien toiminnan
+julkisten rajapintojen saavutettavuuden
+tietokantaan tallentuneet muutokset
+
 ## Testien ajaminen
 
 Pelkkä DTO-testi ja sen terminaalitulostukset:
