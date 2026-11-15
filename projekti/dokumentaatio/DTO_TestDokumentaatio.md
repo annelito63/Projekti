@@ -102,6 +102,124 @@ tapahtumakohtaisen lipputyyppien listauksen
 uusien lipputyyppien luomisen
 käyttöoikeuksien toiminnan eri käyttäjärooleilla
 
+## AuthControllerTest
+
+Ennen jokaista testiä luodaan:
+
+kaksi verkkokaupan asiakasta
+yksi ylläpitäjä
+testitapahtuma
+tapahtumaan liittyvä lipputyyppi
+kaksi myyntitapahtumaa, yksi kummallekin asiakkaalle
+
+Testit varmistavat, että käyttäjät voivat käyttää vain heille sallittuja toimintoja ja nähdä vain ne tiedot, joihin heillä on oikeus.
+
+Testattavat toiminnallisuudet
+1. Tarkistaa, että kirjautumaton käyttäjä ei pääse tarkastelemaan myyntitietoja.
+2. Varmistaa, että asiakas näkee vain omat myyntinsä.
+3. Estää asiakasta hakemasta toisen asiakkaan myyntitietoja.
+4. Tarkistaa, että uuden myynnin omistajaksi asetetaan aina kirjautunut käyttäjä, vaikka käyttäjä yrittäisi lähettää toisen käyttäjän tunnisteen.
+5. Varmistaa, että asiakas voi selata tapahtumia mutta ei voi luoda uusia tapahtumia.
+6. Tarkistaa, että ylläpitäjä voi nähdä kaikkien käyttäjien myynnit.
+7. Estää asiakasta luomasta henkilöstö- tai ylläpitäjätunnuksia.
+8. Tarkistaa, että rekisteröinti luo aina verkkokaupan asiakkaan.
+9. Varmistaa, ettei rekisteröinnin vastauksessa palauteta salasanatiivistettä.
+10. Tarkistaa, että liian pitkä BCryptin rajoitukset ylittävä salasana hylätään.
+11. Estää käyttäjää korottamasta omaa rooliaan rekisteröitymisen yhteydessä.
+12. Tarkistaa, ettei samaa sähköpostiosoitetta voida rekisteröidä kahdesti eri kirjainkoosta huolimatta.
+
+Testeissä käytetään seuraavia rajapintoja:
+
+Myynnit
+GET /myynnit hakee käyttäjän myynnit
+GET /myynnit/{id} hakee yksittäisen myyntitapahtuman
+POST /myynnit luo uuden myyntitapahtuman
+Tapahtumat
+GET /tapahtumat hakee tapahtumat
+POST /tapahtumat luo uuden tapahtuman
+Käyttäjähallinta
+POST /auth/register rekisteröi uuden käyttäjän
+POST /auth/users luo uuden käyttäjän järjestelmään
+Käyttöoikeustestaus
+
+Testiluokka tarkistaa Spring Securityn käyttöoikeudet useissa tilanteissa:
+
+1. kirjautumaton käyttäjä saa vastauksen 401 Unauthorized
+2. verkkokaupan asiakas voi tarkastella vain omia tietojaan
+3. verkkokaupan asiakas ei voi tehdä ylläpitäjän oikeuksia vaativia toimintoja
+4. ylläpitäjä voi tarkastella kaikkien käyttäjien myyntitietoja
+5. luvattomat toiminnot palauttavat vastauksen 403 Forbidden
+
+Testeissä varmistetaan useita tietoturvaominaisuuksia:
+
+1. käyttäjä ei voi nähdä toisen asiakkaan myyntitietoja
+2. myynnin omistajuutta ei voi väärentää pyynnön mukana lähetettävällä käyttäjätunnisteella
+3. salasanatiivisteitä ei palauteta API-vastauksissa
+4. käyttäjä ei voi rekisteröityä ylläpitäjäksi tai henkilöstökäyttäjäksi
+5. sähköpostiosoitteiden yksilöllisyys tarkistetaan kirjainkoosta riippumatta
+6. BCrypt-algoritmin turvallinen salasanapituusraja huomioidaan validoinnissa
+
+AuthControllerTest käyttää MockMvc:tä suorien HTTP-kutsujen simulointiin ja testaa koko sovellusketjua autentikoinnista tietokantaan asti. Testit varmistavat:
+
+1. käyttäjien tunnistautumisen
+2. roolipohjaiset käyttöoikeudet
+3. tietojen näkyvyyden rajaukset
+4. uusien käyttäjien rekisteröinnin
+5. myyntien omistajuuden suojaamisen
+6. salasanojen ja käyttäjätietojen turvallisen käsittelyn
+
+Testiluokka toimii samalla sekä autentikointi-, käyttöoikeus- että tietoturvatestinä varmistaen, että järjestelmän liiketoimintasäännöt toteutuvat myös HTTP-rajapinnan kautta.
+
+## MyyntitapahtumaControllerTest
+
+Ennen jokaista testiä luodaan:
+
+testitapahtuma, jonka kapasiteetti on 10 osallistujaa
+tapahtumaan liittyvä lipputyyppi
+myyjäroolilla varustettu käyttäjä
+tarvittavat tunnisteet myöhempiä testejä varten
+
+Testit suoritetaan autentikoituna käyttäjänä, jolla on MYYJA-rooli.
+
+Testattavat toiminnallisuudet:
+1. Tarkistaa, että tuntemattoman myyntitapahtuman haku palauttaa virheen.
+2. Tarkistaa, että virheellinen tunnisteen tyyppi palauttaa virheen.
+3. Varmistaa, ettei myyntitapahtumaa voi päivittää tukemattomalla HTTP-metodilla.
+4. Tarkistaa virheellisen JSON-sisällön käsittelyn.
+5. Tarkistaa pakollisten kenttien validoinnin:
+- tapahtuma puuttuu
+- käyttäjä puuttuu
+- myyntirivit puuttuvat
+- myyntirivilista on tyhjä
+6. Tarkistaa, että tuntemattomat tapahtumat, käyttäjät ja lipputyypit käsitellään oikein.
+7. Tarkistaa myyntirivien validoinnin:
+- lipputyyppi puuttuu
+- lippujen määrä on nolla
+8. Luo onnistuneen myynnin ja varmistaa, että yksilölliset liput muodostetaan.
+9. Tarkistaa, että tapahtuman kapasiteettia ei voi ylittää.
+10. Varmistaa, ettei toisen tapahtuman lipputyyppiä voi käyttää myyntitapahtumassa.
+
+Controller tarjoaa seuraavat testatut rajapinnat:
+
+GET /myynnit/{id} hakee yksittäisen myyntitapahtuman
+POST /myynnit luo uuden myyntitapahtuman
+
+Testeissä varmistetaan lisäksi, että:
+
+PUT /myynnit/{id} ei ole sallittu ja palauttaa virheen
+
+Testien kattavuus
+
+MyyntitapahtumaControllerTest käyttää MockMvc:tä HTTP-pyyntöjen simulointiin ja tarkistaa:
+
+HTTP-statuskoodit
+JSON-vastausten sisällön
+syötevalidoinnit
+liiketoimintasääntöjen toteutumisen
+tapahtuman kapasiteettirajoitukset
+lippujen automaattisen luomisen
+tietokantaan tallentuneet muutokset
+
 ## TapahtumaControllerTest
 
 `TapahtumaControllerTest.java` sijaitsee testipaketin ylemmällä tasolla.
@@ -128,6 +246,8 @@ Controller tarjoaa näille toiminnoille HTTP-rajapinnan:
 Nykyinen `TapahtumaControllerTest` tarkistaa controllerin taustalla toimivan
 tietokantakäsittelyn repositoryn kautta. Se ei vielä tee suoria HTTP-kutsuja
 controllerille MockMvc:n avulla.
+
+## TapahtumaHttpTest
 
 ## Testien ajaminen
 
