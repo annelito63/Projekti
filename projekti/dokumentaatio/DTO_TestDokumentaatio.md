@@ -31,7 +31,7 @@ Testi tulostaa terminaaliin jokaisen testin nimen, käytetyt arvot ja
 onnistumisilmoituksen. Tulostus helpottaa testin toiminnan seuraamista, mutta
 testin onnistuminen perustuu JUnitin `assert`-tarkistuksiin.
 
-## LippuControlletTest
+## LippuControllerTest
 
 Testiluokka luo ennen jokaista testiä testilipun, jolla on seuraavat arvot:
 
@@ -65,6 +65,42 @@ LippuControllerTest käyttää MockMvc:tä suorien HTTP-kutsujen simulointiin ja
 HTTP-statuskoodit
 JSON-vastauksen sisällön
 tietokantaan tallentuneet muutokset LippuRepositoryn kautta
+
+## LipputyyppiControllerTest
+
+Ennen jokaista testiä luodaan:
+
+tapahtuma nimeltä Testikonsertti
+tapahtumaan liittyvä lipputyyppi Peruslippu
+lipputyypin hinnaksi asetetaan 25.0
+
+Testit tarkistavat lipputyyppien hakemisen sekä uusien lipputyyppien luomisen käyttöoikeuksien mukaisesti.
+
+Testattavat toiminnallisuudet:
+1. Hakee tapahtuman lipputyypit julkisella GET-kutsulla.
+2. Tarkistaa, että palautettu lipputyyppi sisältää oikeat tiedot.
+3. Tarkistaa, että tuntemattoman tapahtuman lipputyyppien haku palauttaa virheen.
+4. Varmistaa, että ylläpitäjä voi luoda uuden lipputyypin tapahtumalle.
+5. Tarkistaa, että luotu lipputyyppi tallentuu ja näkyy myöhemmissä hauissa.
+6. Varmistaa, ettei tavallinen asiakas voi luoda uusia lipputyyppejä.
+
+Controller tarjoaa seuraavat testatut rajapinnat:
+
+GET /tapahtumat/{tapahtumaId}/lipputyypit hakee tapahtumaan liittyvät lipputyypit
+POST /tapahtumat/{tapahtumaId}/lipputyypit luo uuden lipputyypin tapahtumalle
+Käyttöoikeustestaus
+
+Testiluokka tarkistaa Spring Securityn käyttöoikeusrajoitukset:
+
+1. käyttäjä roolilla YLLAPITAJA voi luoda uusia lipputyyppejä
+2. käyttäjä roolilla VERKKOKAUPAN_ASIAKAS ei voi luoda uusia lipputyyppejä ja saa vastauksena 403 Forbidden
+
+LipputyyppiControllerTest käyttää suoria HTTP-kutsuja MockMvc:n avulla ja tarkistaa:
+HTTP-statuskoodit
+JSON-vastausten sisällön
+tapahtumakohtaisen lipputyyppien listauksen
+uusien lipputyyppien luomisen
+käyttöoikeuksien toiminnan eri käyttäjärooleilla
 
 ## TapahtumaControllerTest
 
