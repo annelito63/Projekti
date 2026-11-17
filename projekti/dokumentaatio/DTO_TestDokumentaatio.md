@@ -25,11 +25,34 @@ Testit tarkistavat seuraavat asiat:
 - `tapahtumaId` ja `kayttajaId` palautuvat oikein
 - `rivit`-lista voidaan asettaa ja lukea
 - myyntitapahtuman sisällä oleva `MyyntiriviLuontiDto` säilyy oikeana rivinä
+- useamman myyntirivin järjestys säilyy DTO:ssa
 - oletusarvot ovat `tapahtumaId = null`, `kayttajaId = null` ja `rivit = null`
 
 Testi tulostaa terminaaliin jokaisen testin nimen, käytetyt arvot ja
 onnistumisilmoituksen. Tulostus helpottaa testin toiminnan seuraamista, mutta
 testin onnistuminen perustuu JUnitin `assert`-tarkistuksiin.
+
+## Rekisteröintipyynnön unit-testi
+
+`AuthControllerTest` sisältää suoran unit-testin `RekisterointiPyynto`-tietueen
+salasanan pituustarkistukselle. Se varmistaa, että BCryptin 72 UTF-8-tavun raja
+hyväksyy rajan mittaisen salasanan ja hylkää sen ylityksen sekä ASCII- että
+monitavuisilla merkeillä. Erillinen HTTP-testi varmistaa saman hylkäyksen
+rekisteröintireitillä.
+
+## Myynnin ja lipuntarkastuksen E2E-tyyppinen testi
+
+`MyyntitapahtumaControllerTest.myyjaVoiOstaaTarkastaaJaMerkitäLipunKaytetyksi`
+käy palvelun HTTP-rajapintojen läpi: luo myynnin, tarkastaa luodun lipun
+lippukoodilla, merkitsee lipun käytetyksi ja tarkastaa käytetyn tilan uudelleen.
+Testi käyttää Springin MockMvc:tä ja testikantaa, joten se kattaa palvelun koko
+ostosta tarkastukseen kulkevan ketjun ilman ulkoista palvelua.
+
+## Automaattinen testiajo
+
+GitHub Actions -työnkulku `.github/workflows/maven-tests.yml` suorittaa kaikki
+Maven-testit Java 17:llä jokaisessa pushissa ja pull requestissa. Työnkulun voi
+käynnistää myös manuaalisesti GitHub Actions -näkymästä.
 
 ## TapahtumaControllerTest
 

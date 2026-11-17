@@ -2,6 +2,7 @@ package ohjelmistoprojekti.projekti.web;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import ohjelmistoprojekti.projekti.model.Kayttaja;
 import ohjelmistoprojekti.projekti.model.KayttajaRepository;
+import ohjelmistoprojekti.projekti.model.Lippu;
 import ohjelmistoprojekti.projekti.model.LippuRepository;
 import ohjelmistoprojekti.projekti.model.Lipputyyppi;
 import ohjelmistoprojekti.projekti.model.LipputyyppiRepository;
@@ -202,6 +204,38 @@ class MyyntitapahtumaControllerTest {
 
         assertEquals(2, lippuRepository.countByTapahtumaid(
                 tapahtumaRepository.findById(tapahtumaId).orElseThrow()));
+    }
+
+    @Test
+    void myyjaVoiOstaaTarkastaaJaMerkitäLipunKaytetyksi() throws Exception {
+        performAuthenticated(post("/myynnit")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestWithRow("{\"lipputyyppiId\":" + lipputyyppiId + ",\"maara\":1}")))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.liput.length()").value(1))
+                .andExpect(jsonPath("$.kokonaissumma").value(20.0));
+
+        Lippu lippu = lippuRepository.findByHinta(20.0).get(0);
+        long lippuId = lippu.getId();
+        String lippukoodi = lippu.getKoodi();
+
+        mockMvc.perform(get("/ticket/ticket").param("koodi", lippukoodi)
+                .with(user("testimyyja").roles("MYYJA")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(lippuId))
+                .andExpect(jsonPath("$.kaytetty").value(false));
+
+        mockMvc.perform(patch("/ticket/{id}", lippuId)
+                .with(user("testimyyja").roles("MYYJA"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"kaytetty\":true}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.kaytetty").value(true));
+
+        mockMvc.perform(get("/ticket/ticket").param("koodi", lippukoodi)
+                .with(user("testimyyja").roles("MYYJA")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.kaytetty").value(true));
     }
 
     @Test

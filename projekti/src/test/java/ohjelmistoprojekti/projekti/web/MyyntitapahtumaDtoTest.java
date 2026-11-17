@@ -96,4 +96,18 @@ class MyyntitapahtumaDtoTest {
         assertEquals(2, dto.getRivit().get(0).getMaara());
         System.out.println("  OK: tapahtuman tiedot ja sisakkainen myyntirivi ovat oikein.");
     }
+
+    @Test
+    void myyntitapahtumaLuontiDtoSailyttaaUseanMyyntirivinJarjestyksen() {
+        MyyntiriviLuontiDto ensimmainen = new MyyntiriviLuontiDto(11L, 2);
+        MyyntiriviLuontiDto toinen = new MyyntiriviLuontiDto(22L, 1);
+        MyyntitapahtumaLuontiDto dto = new MyyntitapahtumaLuontiDto(
+                40L, 50L, List.of(ensimmainen, toinen));
+
+        assertEquals(2, dto.getRivit().size());
+        assertSame(ensimmainen, dto.getRivit().get(0));
+        assertSame(toinen, dto.getRivit().get(1));
+        assertEquals(11L, dto.getRivit().get(0).getLipputyyppiId());
+        assertEquals(22L, dto.getRivit().get(1).getLipputyyppiId());
+    }
 }

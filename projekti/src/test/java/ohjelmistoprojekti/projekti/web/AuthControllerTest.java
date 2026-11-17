@@ -1,6 +1,8 @@
 package ohjelmistoprojekti.projekti.web;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -28,6 +30,7 @@ import ohjelmistoprojekti.projekti.model.MyyntitapahtumaRepository;
 import ohjelmistoprojekti.projekti.model.Rooli;
 import ohjelmistoprojekti.projekti.model.Tapahtuma;
 import ohjelmistoprojekti.projekti.model.TapahtumaRepository;
+import ohjelmistoprojekti.projekti.web.dto.RekisterointiPyynto;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -174,6 +177,14 @@ class AuthControllerTest {
     }
 
     @Test
+    void rekisterointipyyntoTarkistaaSalasananUtf8Tavurajan() {
+        assertTrue(rekisterointipyynto("a".repeat(72)).isSalasananBcryptPituusKelvollinen());
+        assertFalse(rekisterointipyynto("a".repeat(73)).isSalasananBcryptPituusKelvollinen());
+        assertTrue(rekisterointipyynto("ä".repeat(36)).isSalasananBcryptPituusKelvollinen());
+        assertFalse(rekisterointipyynto("ä".repeat(37)).isSalasananBcryptPituusKelvollinen());
+    }
+
+    @Test
     void rekisterointiEiVoiKorottaaRooliaTaiKayttaaSamaaSahkopostia() throws Exception {
         mockMvc.perform(post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -200,5 +211,9 @@ class AuthControllerTest {
 
     private Myyntitapahtuma luoMyynti(Kayttaja kayttaja) {
         return new Myyntitapahtuma(null, tapahtuma, kayttaja, LocalDateTime.now(), 20.0, List.of());
+    }
+
+    private RekisterointiPyynto rekisterointipyynto(String salasana) {
+        return new RekisterointiPyynto("Testiasiakas", "testi@example.test", salasana);
     }
 }
