@@ -5,6 +5,10 @@ Staattinen MVP tapahtumien selaamiseen ja myynnin tallentamiseen. Client käytt�
 Pelkkä `index.html`-tiedoston avaaminen selaimessa ei riitä, koska API-pyynnöt
 vaativat tämän välityspalvelimen.
 
+## Render Web Service Clientille
+
+https://lippupalvelu-client.onrender.com/
+
 ## Käynnistys Windowsissa
 
 1. Asenna Node.js 18 tai uudempi.
